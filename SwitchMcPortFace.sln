@@ -1,13 +1,27 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenGL 4 Test", "OpenGL 4 Test\OpenGL 4 Test.vcxproj", "{F617E923-DA34-4FC2-8581-0253EBB84E1B}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LanMap Filter", "LanMap Filter\LanMap Filter.vcxproj", "{D3DF6974-1469-431A-8182-B949748AC295}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigTool", "ConfigTool\ConfigTool.csproj", "{FD95BCBC-E9D7-4E2A-9876-3969EAC77FA8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "local_admin@10.10.1.202", "local_admin@10.10.1.202", "{8C39550B-05B7-46F8-83CB-E8EA50FAE0DB}"
+	ProjectSection(SolutionItems) = preProject
+		local_admin@10.10.1.202\var\www\html\assetadd.php = local_admin@10.10.1.202\var\www\html\assetadd.php
+		local_admin@10.10.1.202\var\www\html\assetlist.php = local_admin@10.10.1.202\var\www\html\assetlist.php
+		local_admin@10.10.1.202\var\www\html\index.php = local_admin@10.10.1.202\var\www\html\index.php
+		local_admin@10.10.1.202\var\www\html\index2.php = local_admin@10.10.1.202\var\www\html\index2.php
+		local_admin@10.10.1.202\var\www\html\index3.php = local_admin@10.10.1.202\var\www\html\index3.php
+		local_admin@10.10.1.202\var\www\html\index4.php = local_admin@10.10.1.202\var\www\html\index4.php
+		local_admin@10.10.1.202\var\www\html\log_25.5.2016.txt = local_admin@10.10.1.202\var\www\html\log_25.5.2016.txt
+		local_admin@10.10.1.202\var\www\html\log_26.5.2016.txt = local_admin@10.10.1.202\var\www\html\log_26.5.2016.txt
+		local_admin@10.10.1.202\var\www\html\newasset.php = local_admin@10.10.1.202\var\www\html\newasset.php
+		local_admin@10.10.1.202\var\www\html\signout.php = local_admin@10.10.1.202\var\www\html\signout.php
+		local_admin@10.10.1.202\var\www\html\success.php = local_admin@10.10.1.202\var\www\html\success.php
+		local_admin@10.10.1.202\var\www\html\update.php = local_admin@10.10.1.202\var\www\html\update.php
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,13 +33,6 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F617E923-DA34-4FC2-8581-0253EBB84E1B}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{F617E923-DA34-4FC2-8581-0253EBB84E1B}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{F617E923-DA34-4FC2-8581-0253EBB84E1B}.Debug|Win32.ActiveCfg = Debug|Win32
-		{F617E923-DA34-4FC2-8581-0253EBB84E1B}.Release|Any CPU.ActiveCfg = Release|Win32
-		{F617E923-DA34-4FC2-8581-0253EBB84E1B}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{F617E923-DA34-4FC2-8581-0253EBB84E1B}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{F617E923-DA34-4FC2-8581-0253EBB84E1B}.Release|Win32.ActiveCfg = Release|Win32
 		{D3DF6974-1469-431A-8182-B949748AC295}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{D3DF6974-1469-431A-8182-B949748AC295}.Debug|Any CPU.Build.0 = Debug|Win32
 		{D3DF6974-1469-431A-8182-B949748AC295}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
@@ -51,20 +58,5 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 4
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://trevelyan.visualstudio.com/defaultcollection
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = OpenGL\u00204\u0020Test\\OpenGL\u00204\u0020Test.vcxproj
-		SccProjectName1 = OpenGL\u00204\u0020Test
-		SccLocalPath1 = OpenGL\u00204\u0020Test
-		SccProjectUniqueName2 = LanMap\u0020Filter\\LanMap\u0020Filter.vcxproj
-		SccProjectName2 = LanMap\u0020Filter
-		SccLocalPath2 = LanMap\u0020Filter
-		SccProjectUniqueName3 = ConfigTool\\ConfigTool.csproj
-		SccProjectName3 = ConfigTool
-		SccLocalPath3 = ConfigTool
 	EndGlobalSection
 EndGlobal
