@@ -12,6 +12,9 @@ namespace ConfigTool
 {
     public partial class Form1 : Form
     {
+        //Writing to a text file in C# - https://msdn.microsoft.com/en-us/library/8bh11f1k.aspx?f=255&MSPPError=-2147217396
+
+
         String[,] configOptions; 
 
         char[] delimiters = {'=', '\n', ';'};
