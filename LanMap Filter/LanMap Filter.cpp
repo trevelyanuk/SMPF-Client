@@ -32,9 +32,9 @@
 
 //CURL library
 //Need this to be static, ideally
-#define CURL_STATICLIB
-#include "curl/curl.h"
-#pragma comment ( lib, "libcurl.lib" )
+//#define CURL_STATICLIB
+//#include "curl/curl.h"
+//#pragma comment ( lib, "libcurl.lib" )
 
 //http://curl.haxx.se/libcurl/c/example.html
 //http://curl.haxx.se/libcurl/c/simple.html
@@ -53,7 +53,8 @@ void GetMACaddress();
 int setAdapter();
 int initCapture();
 void capture();
-void generateURLData();
+void generatePOSTData();
+void generatePOSTString();
 void wingethostname();
 void uploadString(char * address, char * data);
 
@@ -68,8 +69,7 @@ char * ip6ToString(struct sockaddr *sockaddr, char *address, int addrlen);
 int checkErrors();
 int getCorrectNetwork();
 void getListOfAdapters();
-void PrintData(u_char* data, int Size);
-void printPacketData(const char * data, int length);
+
 //C does not use pass by reference, only value. Pointers are values so we should use pointers if we want to do thisin C
 void addStrings(char ** result, const char * prefix, const char * body, int &prefixlength, int &bodylength);
 //char * addstrings(char * result, char * prefix, char * body, int &prefixlength, int &bodylength);
@@ -166,6 +166,7 @@ char tlv[];
 
 //#define SERVERNAME "http://www.troliver.com/success.php"
 char * settingsServer;
+char * settingsPage;
 int settingsNetwork;
 int settingsTimeout;
 int settingsCDP;
@@ -295,11 +296,13 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	setAdapter();
 	initCapture();
-	capture(); 
+	capture();
 	wingethostname();
-	generateURLData();
-	uploadString(server, postdata);
+	generatePOSTData();
+	generatePOSTString();
+	uploadString(settingsServer, postdata);
 
+	WSACleanup();
 
 	/*
 	*/
@@ -339,7 +342,7 @@ int getCorrectNetwork()
 			//	MACData[i - 2] = uuid.Data4[i];
 
 			GetMACaddress();// adapter);
-		//	system("PAUSE");
+							//	system("PAUSE");
 
 
 
@@ -351,7 +354,7 @@ int getCorrectNetwork()
 void GetMACaddress()//pcap_if_t * addapter_correct)
 {
 
-	
+
 
 	//http://stackoverflow.com/questions/11070183/sprintf-how-to-print-hexadecimal-number-with-leading-0-to-have-width-2
 
@@ -362,47 +365,46 @@ void GetMACaddress()//pcap_if_t * addapter_correct)
 	DWORD dwStatus = GetAdaptersInfo(      // Call GetAdapterInfo
 		AdapterInfo,                 // [out] buffer to receive data
 		&dwBufLen);                  // [in] size of receive data buffer
-	//assert(dwStatus == ERROR_SUCCESS);  // Verify return value is valid, no buffer overflow
+									 //assert(dwStatus == ERROR_SUCCESS);  // Verify return value is valid, no buffer overflow
 
 	PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo; // Contains pointer to
-	// current adapter info
+												 // current adapter info
 
 	do {
-			//Heres that dodgy way of finding the address again..
-			int temp1, temp2, temp3, temp4;
-			if (pAdapterInfo->IpAddressList.IpAddress.String[2] == '.')
-			{
-				temp1 = (pAdapterInfo->IpAddressList.IpAddress.String[0] - '0') * 10;
-				temp2 = (pAdapterInfo->IpAddressList.IpAddress.String[1] - '0') * 1;
-				temp3 = 0;
-			}
-			else
-			{
-				temp1 = (pAdapterInfo->IpAddressList.IpAddress.String[0] - '0') * 100;
-				temp2 = (pAdapterInfo->IpAddressList.IpAddress.String[1] - '0') * 10;
-				temp3 = (pAdapterInfo->IpAddressList.IpAddress.String[2] - '0') * 1;
-			}
-			temp4 = temp1 + temp2 + temp3;
-			if (temp4 == settingsNetwork) //just going to assume one adapter has one address, here.. please don't come back to haunt me later...
-			{
-				// Test MAC address to see if its a VMWare address
-				TestMACaddress(pAdapterInfo->Address);
-			}
-			//		if (TestMACaddress(pAdapterInfo->Address))
-			//		{
-			//			test = 1;
-			//		}
-			pAdapterInfo = pAdapterInfo->Next;    // Progress through linked list
-	}
-	while (pAdapterInfo);                    // Terminate if last adapter
+		//Heres that dodgy way of finding the address again..
+		int temp1, temp2, temp3, temp4;
+		if (pAdapterInfo->IpAddressList.IpAddress.String[2] == '.')
+		{
+			temp1 = (pAdapterInfo->IpAddressList.IpAddress.String[0] - '0') * 10;
+			temp2 = (pAdapterInfo->IpAddressList.IpAddress.String[1] - '0') * 1;
+			temp3 = 0;
+		}
+		else
+		{
+			temp1 = (pAdapterInfo->IpAddressList.IpAddress.String[0] - '0') * 100;
+			temp2 = (pAdapterInfo->IpAddressList.IpAddress.String[1] - '0') * 10;
+			temp3 = (pAdapterInfo->IpAddressList.IpAddress.String[2] - '0') * 1;
+		}
+		temp4 = temp1 + temp2 + temp3;
+		if (temp4 == settingsNetwork) //just going to assume one adapter has one address, here.. please don't come back to haunt me later...
+		{
+			// Test MAC address to see if its a VMWare address
+			TestMACaddress(pAdapterInfo->Address);
+		}
+		//		if (TestMACaddress(pAdapterInfo->Address))
+		//		{
+		//			test = 1;
+		//		}
+		pAdapterInfo = pAdapterInfo->Next;    // Progress through linked list
+	} while (pAdapterInfo);                    // Terminate if last adapter
 }
 
 int TestMACaddress(BYTE *addr)
 {
 	//%02x means hex (the x) and print in the format of having 2 characters. prefixes with a 0 if theres nothing
 	printf("\nMac Address: %02x:%02x:%02x:%02x:%02x:%02x", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
-	
-	
+
+
 	_snprintf_s(systemmac, SZ_MAC, "%02x:%02x:%02x:%02x:%02x:%02x", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
 	slsystemmac = strlen(systemmac);
 
@@ -424,7 +426,7 @@ int checkErrors()
 	if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &allAdapters, errorBuffer) == -1)
 	{
 		fprintf(stderr, "Error in pcap_findalldevs_ex function: %s\n", errorBuffer);
-	//	system("PAUSE");
+		//	system("PAUSE");
 		return -1;
 	}
 
@@ -432,7 +434,9 @@ int checkErrors()
 	if (allAdapters == NULL)
 	{
 		printf("\nNo Adapters found! Make sure WinPcap is installed.\n");
-		system("PAUSE");
+#ifdef _DEBUG
+		system("pause");
+#endif
 		return 1;
 	}
 
@@ -459,7 +463,7 @@ bool testTargetNetwork(pcap_if_t * adapter)
 	{
 
 		if (adapterAddress->addr->sa_family == AF_INET)
-		{			
+		{
 			inet_ntop(adapterAddress->addr->sa_family,
 				get_in_addr((struct sockaddr *)adapterAddress->addr),
 				test,
@@ -542,34 +546,34 @@ void printInterface(pcap_if_t * adapter)
 		switch (adapterAddress->addr->sa_family)
 		{
 		case AF_INET:
-				printf("\tAddress Family Name: AF_INET\n");
+			printf("\tAddress Family Name: AF_INET\n");
 
-				//ipToString is WEIRD! Converts a long string to an IP address in groups of 4 chars, but its a little endian system weirdly. 
-				//I think
-				
-			
+			//ipToString is WEIRD! Converts a long string to an IP address in groups of 4 chars, but its a little endian system weirdly. 
+			//I think
 
-	
-				if (adapterAddress->addr)
-					printf("\tAddress: %s\n", ipToString(((struct sockaddr_in *)adapterAddress->addr)->sin_addr.s_addr));
-				if (adapterAddress->netmask)
-					printf("\tNetmask: %s\n", ipToString(((struct sockaddr_in *)adapterAddress->netmask)->sin_addr.s_addr));
-				if (adapterAddress->broadaddr)
-					printf("\tBroadcast Address: %s\n", ipToString(((struct sockaddr_in *)adapterAddress->broadaddr)->sin_addr.s_addr));
-				if (adapterAddress->dstaddr)
-					printf("\tDestination Address: %s\n", ipToString(((struct sockaddr_in *)adapterAddress->dstaddr)->sin_addr.s_addr));
-				break;
 
-			case AF_INET6:
-				//We could ignore this for now, nobody gives a shit about ipv6 anyway
-				printf("\tAddress Family Name: AF_INET6\n");
-				if (adapterAddress->addr)
-					printf("\tAddress: %s\n", ip6ToString(adapterAddress->addr, ip6str, sizeof(ip6str)));
-				break;
 
-			default:
-				printf("\tAddress Family Name: Unknown\n");
-				break;
+
+			if (adapterAddress->addr)
+				printf("\tAddress: %s\n", ipToString(((struct sockaddr_in *)adapterAddress->addr)->sin_addr.s_addr));
+			if (adapterAddress->netmask)
+				printf("\tNetmask: %s\n", ipToString(((struct sockaddr_in *)adapterAddress->netmask)->sin_addr.s_addr));
+			if (adapterAddress->broadaddr)
+				printf("\tBroadcast Address: %s\n", ipToString(((struct sockaddr_in *)adapterAddress->broadaddr)->sin_addr.s_addr));
+			if (adapterAddress->dstaddr)
+				printf("\tDestination Address: %s\n", ipToString(((struct sockaddr_in *)adapterAddress->dstaddr)->sin_addr.s_addr));
+			break;
+
+		case AF_INET6:
+			//We could ignore this for now, nobody gives a shit about ipv6 anyway
+			printf("\tAddress Family Name: AF_INET6\n");
+			if (adapterAddress->addr)
+				printf("\tAddress: %s\n", ip6ToString(adapterAddress->addr, ip6str, sizeof(ip6str)));
+			break;
+
+		default:
+			printf("\tAddress Family Name: Unknown\n");
+			break;
 		}
 	}
 	printf("\n");
@@ -587,12 +591,12 @@ char * ipToString(u_long in)
 	static char output[IPTOSBUFFERS][3 * 4 + 3 + 1];
 	static short which;
 	u_char *p;
-	
-	
+
+
 	//print a long unsigned int (%lu)
 	//in));
 
-	
+
 	p = (u_char *)&in;
 	which = (which + 1 == IPTOSBUFFERS ? 0 : which + 1);
 	_snprintf_s(output[which], sizeof(output[which]), sizeof(output[which]), "%d.%d.%d.%d", p[0], p[1], p[2], p[3]);
@@ -673,6 +677,92 @@ void addStrings(char ** result, const char * prefix, const char * body, int &pre
 
 void uploadString(char * address, char * data)
 {
+
+
+
+	// We first prepare some "hints" for the "getaddrinfo" function
+	// to tell it, that we are looking for a IPv4 TCP Connection.
+	struct addrinfo hints;
+	ZeroMemory(&hints, sizeof(hints));
+	hints.ai_family = AF_INET;          // We are targeting IPv4
+	hints.ai_protocol = IPPROTO_TCP;    // We are targeting TCP
+	hints.ai_socktype = SOCK_STREAM;    // We are targeting TCP so its SOCK_STREAM
+
+										// Aquiring of the IPv4 address of a host using the newer
+										// "getaddrinfo" function which outdated "gethostbyname".
+										// It will search for IPv4 addresses using the TCP-Protocol.
+	struct addrinfo* targetAdressInfo = NULL;
+	DWORD getAddrRes = getaddrinfo(address, NULL, &hints, &targetAdressInfo);
+
+	if (getAddrRes != 0 || targetAdressInfo == NULL)
+	{
+		printf("Could not resolve the hostname\n");
+
+#ifdef _DEBUG
+		system("pause");
+#endif	
+	}
+
+	// Create the Socket Address Informations, using IPv4
+	// We dont have to take care of sin_zero, it is only used to extend the length of SOCKADDR_IN to the size of SOCKADDR
+	SOCKADDR_IN sockAddr;
+	sockAddr.sin_addr = ((struct sockaddr_in*) targetAdressInfo->ai_addr)->sin_addr;    // The IPv4 Address from the Address Resolution Result
+	sockAddr.sin_family = AF_INET;  // IPv4
+	sockAddr.sin_port = htons(80);  // HTTP Port: 80
+
+									// We have to free the Address-Information from getaddrinfo again
+	freeaddrinfo(targetAdressInfo);
+
+	// Creation of a socket for the communication with the Web Server,
+	// using IPv4 and the TCP-Protocol
+	SOCKET webSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (webSocket == INVALID_SOCKET)
+	{
+		printf("Creation of the socket failed\n");
+#ifdef _DEBUG
+		system("pause");
+#endif
+	}
+
+	// Establishing a connection to the web Socket
+	printf("Connecting...");
+	if (connect(webSocket, (SOCKADDR*)&sockAddr, sizeof(sockAddr)) != 0)
+	{
+		printf("Could not connect\n");
+#ifdef _DEBUG
+		system("pause");
+#endif
+		closesocket(webSocket);
+	}
+	printf("Connected.\n");
+
+	// Sending a HTTP-GET-Request to the Web Server
+	const char* httpRequest = data;
+	int sentBytes = send(webSocket, httpRequest, strlen(httpRequest), 0);
+	if (sentBytes < strlen(httpRequest) || sentBytes == SOCKET_ERROR)
+	{
+		printf("Could not send the request to the Server\n");
+#ifdef _DEBUG
+		system("pause");
+#endif
+		closesocket(webSocket);
+	}
+
+	// Receiving and Displaying an answer from the Web Server
+	char buffer[10000];
+	ZeroMemory(buffer, sizeof(buffer));
+	int dataLen;
+	while ((dataLen = recv(webSocket, buffer, sizeof(buffer), 0) > 0))
+	{
+		int i = 0;
+		while (buffer[i] >= 32 || buffer[i] == '\n' || buffer[i] == '\r') {
+			printf("%c", buffer[i]);
+			i += 1;
+		}
+	}
+
+
+	/* the CURL way
 	CURL * curl;
 
 	curl_global_init(CURL_GLOBAL_ALL); //Do we need this?
@@ -681,23 +771,24 @@ void uploadString(char * address, char * data)
 
 	if (curl)
 	{
-		curl_easy_setopt(curl, CURLOPT_URL, address);
+	curl_easy_setopt(curl, CURLOPT_URL, address);
 
-		//POST versus get
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
-		//http://stackoverflow.com/questions/9786150/save-curl-content-result-into-a-string-in-c
+	//POST versus get
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
+	//http://stackoverflow.com/questions/9786150/save-curl-content-result-into-a-string-in-c
 
 
-		res = curl_easy_perform(curl);
-		if (res != CURLE_OK)
-		{
-			fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-		}
+	res = curl_easy_perform(curl);
+	if (res != CURLE_OK)
+	{
+	fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+	}
 
-		curl_easy_cleanup(curl);
+	curl_easy_cleanup(curl);
 	}
 
 	curl_global_cleanup();
+	*/
 }
 
 void printPacketData(const u_char * data, int length)
@@ -786,7 +877,9 @@ int initCapture()
 		fprintf(stderr, "\nUnable to open the adapter %s\n", adapter->name);
 		pcap_freealldevs(allAdapters);
 		//Pauses the system so that it will only close on user input
-		system("PAUSE");
+#ifdef _DEBUG
+		system("pause");
+#endif
 		return -1;
 	}
 
@@ -816,7 +909,7 @@ int initCapture()
 
 	if (settingsCDP && settingsLLDP)
 	{
-		sprintf_s(packet_filter,"ether[12:2] = 0x88cc or ether[20:2] = 0x2000");
+		sprintf_s(packet_filter, "ether[12:2] = 0x88cc or ether[20:2] = 0x2000");
 	}
 	else
 		if (settingsCDP)
@@ -833,12 +926,12 @@ int initCapture()
 			else
 			{
 				sprintf_s(packet_filter, ";");
-					printf("\neek");
+				printf("\neek");
 			}
 
-	
+
 	//http://www.kuliniewicz.org/discovery/html/img3.html
-	
+
 
 	//Now to add filters so we only get those two
 	//Maybe try these links in future. 
@@ -846,12 +939,12 @@ int initCapture()
 	//http://www.opensource.apple.com/source/tcpdump/tcpdump-32/tcpdump/print-lldp.c
 	//http://www.opensource.apple.com/source/tcpdump/tcpdump-32/tcpdump/print-cdp.c
 
-	
+
 	//Set the filter to be that which we specified above
 	struct bpf_program fcode;
 	pcap_compile(captureInstance, &fcode, packet_filter, 1, ((struct sockaddr_in *)(adapter->addresses->netmask))->sin_addr.S_un.S_addr);
 	pcap_setfilter(captureInstance, &fcode);
-	
+
 	return 0;
 }
 
@@ -882,7 +975,7 @@ void capture()
 		if (retValue == 0)
 		{
 			printf("\nbeep");
-			
+
 			continue;
 		}
 		//printf("length of packet: %d\n", packetHeader->len);
@@ -934,16 +1027,16 @@ void capture()
 		//This means that we get a huge number but, interpreted at hex, that is actually the decimal number we want
 		int testPacketType = (packetData[12] << 8 | packetData[13]);
 
-	
 
-	
+
+
 
 		//http://stackoverflow.com/questions/1816451/are-there-any-curl-alternatives-for-c
 		//http://yuba.stanford.edu/~casado/pcap/section2.html
-			//https://www.google.co.uk/webhp?sourceid=chrome-instant&rlz=1C1WSCB_enGB561GB561&ion=1&espv=2&ie=UTF-8#q=the%20assimilation%20project
+		//https://www.google.co.uk/webhp?sourceid=chrome-instant&rlz=1C1WSCB_enGB561GB561&ion=1&espv=2&ie=UTF-8#q=the%20assimilation%20project
 
 
-	//		Now to find the host's mac address. It seems it isn't really that easy; I had hoped that Winpcap had some function for this but apparently not.There seem to be a few ways to do it, the easiest is to use GetAdapterAddresses(plural is important - most of the PCs I will be using this on have multiple network adapters)
+		//		Now to find the host's mac address. It seems it isn't really that easy; I had hoped that Winpcap had some function for this but apparently not.There seem to be a few ways to do it, the easiest is to use GetAdapterAddresses(plural is important - most of the PCs I will be using this on have multiple network adapters)
 
 
 
@@ -1030,11 +1123,11 @@ void capture()
 		//}
 
 		//unsigned becausae we dont want values to be negative
-	//unsigned char packetData[1000] = "";
-	//memcpy(&packetData, packetData, packetHeader->len);
+		//unsigned char packetData[1000] = "";
+		//memcpy(&packetData, packetData, packetHeader->len);
 
-	// nl (\n) = 0x0a = 10
-	// nul (\0) = 0x00 = 0
+		// nl (\n) = 0x0a = 10
+		// nul (\0) = 0x00 = 0
 
 
 
@@ -1056,11 +1149,11 @@ void capture()
 
 	}
 }
-void generateURLData()
+void generatePOSTData()
 {
 
 	//Each of these is instantiated as a new character array, essentially, with the first element as the pointer
-	server = settingsServer;
+	//server = settingsServer;
 	prefixhost = "host=";
 	prefixip = "ip=";
 	prefixmac = "mac=";
@@ -1073,7 +1166,7 @@ void generateURLData()
 	prefixsourceproto = "sp=";
 
 	//Now we get the size of each of these arrays
-	int slserver = strlen(server);
+	//int slserver = strlen(server);
 	int slhost = strlen(prefixhost);
 	int slip = strlen(prefixip);
 	int slvlan = strlen(prefixvlan);
@@ -1097,7 +1190,7 @@ void generateURLData()
 	addStrings(&swName, prefixswName, systemswName, slswName, slsystemswName);
 	addStrings(&swMAC, prefixswMAC, systemswMAC, slswMAC, slsystemswMAC);
 
-	addStrings(&sourceproto, prefixsourceproto, systemsourceproto, slsourceproto, slsystemsourceproto );
+	addStrings(&sourceproto, prefixsourceproto, systemsourceproto, slsourceproto, slsystemsourceproto);
 
 
 
@@ -1166,12 +1259,22 @@ void generateURLData()
 
 
 
-
-
-	memcpy(postdata, url, 256);
+	//	memcpy(postdata, url, 256);
 
 }
 
+//Separated out the server and page elements in the config file. Removed http:// as a prefix for the server address
+//Removed cURL libraries and directory references and moved to native sockets due to simplicity and not needing extra external libraries.
+
+void generatePOSTString()
+{
+	sprintf(postdata,
+		"POST %s HTTP/1.1\r\n"
+		"Host: %s\r\n"
+		"Content-Type: application/x-www-form-urlencoded\r\n"// this wont work! text/html"
+		"Content-Length: %i\r\n\r\n"
+		"%s\r\n", settingsPage, settingsServer, strlen(url), url);
+}
 
 
 
@@ -1181,7 +1284,7 @@ void wingethostname()
 {
 	WSADATA wsaData; //Or WSAData wsaData;
 
-	//MAKEWORD does what I do later and makes one 16 bit value from 2 8 bit values (one is bitshifted)
+					 //MAKEWORD does what I do later and makes one 16 bit value from 2 8 bit values (one is bitshifted)
 	if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0)
 	{
 		fprintf(stderr, "WSAStartup failed.\n");
@@ -1193,7 +1296,6 @@ void wingethostname()
 	gethostname(systemhostname, 64);
 	slsystemhostname = strlen(systemhostname);
 	//int x = WSAGetLastError();
-	WSACleanup();
 
 }
 
@@ -1210,20 +1312,20 @@ int loadConfig()
 
 	//Strips out all of these (space, equals, comma, new line, semi colon)
 	char * delimiters = " =,\n;";
-	
+
 	if (!pFile)
 	{
-//		fprintf(stderr, "opening %s: %s\n", argv[1], strerror(errno));
-	//	system("PAUSE");
+		//		fprintf(stderr, "opening %s: %s\n", argv[1], strerror(errno));
+		//	system("PAUSE");
 		return 1;
 	}
 
 	size_t linesRead = 0;
-	
+
 	while (fgets(buffer2[linesRead], TEXTSIZE, pFile) != NULL)
 	{
 		//comments and new lines are missed
-	
+
 		//Skips lines beginning with # or that are blank
 		if (buffer2[linesRead][0] == '\n' || buffer2[linesRead][0] == '#')
 		{
@@ -1237,29 +1339,50 @@ int loadConfig()
 		//strtok will return a pointer to a string of characters which are separated by whatever we tell it to separate
 		//by, such as an =. It will return the address at the point of the first string of chars.
 		variable = strtok_s(buffer2[linesRead], delimiters, &next);
-		
+
 		//Probably a blank, skip this one
 		if (!variable)
 		{
 			continue;
 		}
-		
+
 		if (strcmp(variable, "server") == 0)
-		{			
+		{
 			variable = strtok_s(NULL, delimiters, &next);
 			if (!variable)
 			{
-				printf("Error in configuration file: no value for server!\n");
+				printf("Error in configuration file: no value for server address!\n");
 				{
-					system("PAUSE");
+#ifdef _DEBUG
+					system("pause");
+#endif
 					return 2;
 				}
 			}
-			
+
 			settingsServer = (char *)malloc((strlen(variable) + 1) * sizeof(char));
 			memcpy(settingsServer, variable, strlen(variable));
 			settingsServer[strlen(variable)] = '\0';
-			printf("Server is %s\n", variable);
+			printf("Server address is %s\n", variable);
+		}
+		else if (strcmp(variable, "page") == 0)
+		{
+			variable = strtok_s(NULL, delimiters, &next);
+			if (!variable)
+			{
+				printf("Error in configuration file: no value for page!\n");
+				{
+#ifdef _DEBUG
+					system("pause");
+#endif
+					return 2;
+				}
+			}
+
+			settingsPage = (char *)malloc((strlen(variable) + 1) * sizeof(char));
+			memcpy(settingsPage, variable, strlen(variable));
+			settingsPage[strlen(variable)] = '\0';
+			printf("Page is %s\n", variable);
 		}
 		else if (strcmp(variable, "network") == 0)
 		{
@@ -1268,7 +1391,9 @@ int loadConfig()
 			{
 				printf("Error in configuration file: no value for network!\n");
 				{
-					system("PAUSE");
+#ifdef _DEBUG
+					system("pause");
+#endif
 					return 2;
 				}
 			}
@@ -1282,7 +1407,9 @@ int loadConfig()
 			{
 				printf("Error in configuration file: no value for timeout!\n");
 				{
-					system("PAUSE");
+#ifdef _DEBUG
+					system("pause");
+#endif
 					return 2;
 				}
 			}
@@ -1299,7 +1426,9 @@ int loadConfig()
 			{
 				printf("Error in configuration file: no value for protocdp!\n");
 				{
-					system("PAUSE");
+#ifdef _DEBUG
+					system("pause");
+#endif
 					return 2;
 				}
 			}
@@ -1321,7 +1450,9 @@ int loadConfig()
 			{
 				printf("Error in configuration file: no value for protolldp!\n");
 				{
-					system("PAUSE");
+#ifdef _DEBUG
+					system("pause");
+#endif
 					return 2;
 				}
 			}
@@ -1340,7 +1471,7 @@ int loadConfig()
 			continue;
 		}
 
-	//http://www.linuxquestions.org/questions/programming-9/read-parameters-from-config-file-file-parser-362188/
+		//http://www.linuxquestions.org/questions/programming-9/read-parameters-from-config-file-file-parser-362188/
 
 		linesRead++;
 	}
@@ -1350,7 +1481,9 @@ int loadConfig()
 	//Exit time!
 	//Pauses the system so that it will only close on user input
 
-	system("PAUSE");
+#ifdef _DEBUG
+	system("pause");
+#endif
 	return 0;
 	/**/
 
@@ -1392,7 +1525,7 @@ void getDataCDP()
 	Bytes 14, 15, 16 are LLC
 	Bytes 17, 18, 19 are the OUI (if its 0, then the PID is assumed to be the Ethertype, anything else indicates organisational specific things). Cisco is 0x00000c
 	Bytes 20 and 21 are the Protocol ID, which will usually be EtherType. CDP is 2000 (0x2000)
-	
+
 
 	//https://www.informit.com/library/content.aspx?b=CCNP_Studies_Troubleshooting&seqNum=53
 	//https://en.wikipedia.org/wiki/Subnetwork_Access_Protocol
@@ -1417,9 +1550,9 @@ void getDataCDP()
 	{
 
 
-		unsigned int type = (packetData[count] <<8 | packetData[count + 1]);
-		unsigned int length = (packetData[count + 2] <<8 | packetData[count + 3]); //length of the TLV - that includes the type and length itself!
-		//length = length & mask;
+		unsigned int type = (packetData[count] << 8 | packetData[count + 1]);
+		unsigned int length = (packetData[count + 2] << 8 | packetData[count + 3]); //length of the TLV - that includes the type and length itself!
+																					//length = length & mask;
 		count += 4;
 		length -= 4;
 
@@ -1432,416 +1565,416 @@ void getDataCDP()
 
 		switch (type)
 		{
-			case 0x01 :
-			{
-				printf("\n\n\tDevice ID: ");
+		case 0x01:
+		{
+			printf("\n\n\tDevice ID: ");
 
-				memcpy(&systemswName, packetData + count, length);
-				slsystemswName = strlen(systemswName);
+			memcpy(&systemswName, packetData + count, length);
+			slsystemswName = strlen(systemswName);
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x02 :
-			{
-				printf("\n\n\tAddress: ");
-
-				//Number of addresses
-				long numberOfAddresses = (packetData[count] << 24 | packetData[count] << 16 | packetData[count + 2] << 8 | packetData[count + 3]);
-				count += 4;
-				length -= 4;
-				for (UINT16 x = 0; x < numberOfAddresses; x++)
-				{
-					//Protocol type
-					//Protocol length
-					count += 2; 
-
-					//This is an IP address
-					if (packetData[count] == 0xcc)
-					{
-						printf("IP Address: ");
-						count++;		
-
-						//This is how long it is
-						int addressLength = ( packetData[count] << 8 | packetData[count + 1]);
-						count += 2;
-
-
-						sprintf_s(systemswIP, "%i.%i.%i.%i", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3]);
-						printf(systemswIP);
-						slsystemswIP = strlen(systemswIP);
-						count += addressLength;
-					}			
-					
-				}
-				
-				break;
-			}
-			case 0x03 :
-			{
-				printf("\n\n\tPort-ID: ");
-
-				memcpy(&systemswitchport, packetData + count, length);
-				slsystemswitchport = strlen(systemswitchport);
-
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				break;
-			}
-			case 0x04 :
-			{
-				printf("\n\n\tCapability: ");
-
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x05 :
-			{
-				printf("\n\n\tVersion String: ");
-
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x06 :
-			{
-				printf("\n\n\tPlatform: ");
-
-					memcpy(&systemswMAC, packetData + count, length);
-					slsystemswMAC = strlen(systemswMAC);
 			for (UINT16 x = 0; x < length; x++)
 			{
 				value[x] = packetData[count];
 				count++;
 			}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x07 :
-			{
-				printf("\n\n\tPrefixes: ");
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x02:
+		{
+			printf("\n\n\tAddress: ");
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x08 :
+			//Number of addresses
+			long numberOfAddresses = (packetData[count] << 24 | packetData[count] << 16 | packetData[count + 2] << 8 | packetData[count + 3]);
+			count += 4;
+			length -= 4;
+			for (UINT16 x = 0; x < numberOfAddresses; x++)
 			{
-				printf("\n\n\tProtocol-Hello option: ");
-
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x09 :
-			{
-				printf("\n\n\tVTP Management Domain: ");
-
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x0a :
-			{
-				
-				printf("\n\n\tNative VLAN ID: ");
-				int port_vlan = (packetData[count] << 8 | packetData[count + 1]);
-		
-				//printf("VLAN ID: %i", port_vlan);
-				_itoa_s(port_vlan, systemvlan, 10);
-				slsystemvlan = strlen(systemvlan);			
-		
+				//Protocol type
+				//Protocol length
 				count += 2;
 
-				printf("%i", port_vlan);
-				break;
-			}
-			case 0x0b :
-			{
-				printf("\n\n\tDuplex: ");
-
-				for (UINT16 x = 0; x < length; x++)
+				//This is an IP address
+				if (packetData[count] == 0xcc)
 				{
-					value[x] = packetData[count];
+					printf("IP Address: ");
 					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x0c :
-			{
-				printf("\n\n\tDONT KNOW LOL");
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x0d :
-			{
-				printf("\n\n\tDONT KNOW LOL");
+					//This is how long it is
+					int addressLength = (packetData[count] << 8 | packetData[count + 1]);
+					count += 2;
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x0e :
-			{
-				printf("\n\n\tATA-186 VoIP VLAN request: ");
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
+					sprintf_s(systemswIP, "%i.%i.%i.%i", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3]);
+					printf(systemswIP);
+					slsystemswIP = strlen(systemswIP);
+					count += addressLength;
 				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x0f :
-			{
-				printf("\n\n\tATA-186 VoIP VLAN assignment: ");
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
 			}
-			case 0x10 :
-			{
-				printf("\n\n\tPower Consumption: ");
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x11 :
-			{
-				printf("\n\n\tMTU: ");
+			break;
+		}
+		case 0x03:
+		{
+			printf("\n\n\tPort-ID: ");
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x12 :
-			{
-				printf("\n\n\tAVVID Trust Bitmap: ");
+			memcpy(&systemswitchport, packetData + count, length);
+			slsystemswitchport = strlen(systemswitchport);
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x13 :
+			for (UINT16 x = 0; x < length; x++)
 			{
-				printf("\n\n\tAVVID Untrusted Ports CoS: ");
+				value[x] = packetData[count];
+				count++;
+			}
+			break;
+		}
+		case 0x04:
+		{
+			printf("\n\n\tCapability: ");
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x14 :
+			for (UINT16 x = 0; x < length; x++)
 			{
-				printf("\n\n\tSystem Name: ");
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x05:
+		{
+			printf("\n\n\tVersion String: ");
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x15 :
+			for (UINT16 x = 0; x < length; x++)
 			{
-				printf("\n\n\tSystem Object ID (Not Decoded): ");
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x06:
+		{
+			printf("\n\n\tPlatform: ");
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x16 :
+			memcpy(&systemswMAC, packetData + count, length);
+			slsystemswMAC = strlen(systemswMAC);
+			for (UINT16 x = 0; x < length; x++)
 			{
-				printf("\n\n\tManagement Addresses: ");
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x07:
+		{
+			printf("\n\n\tPrefixes: ");
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x17 :
+			for (UINT16 x = 0; x < length; x++)
 			{
-				printf("\n\n\tPhysical Location: ");
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x08:
+		{
+			printf("\n\n\tProtocol-Hello option: ");
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x18:
+			for (UINT16 x = 0; x < length; x++)
 			{
-				printf("\n\n\tUNKNOWN: ");
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x09:
+		{
+			printf("\n\n\tVTP Management Domain: ");
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x19:
+			for (UINT16 x = 0; x < length; x++)
 			{
-				printf("\n\n\tUNKNOWN: ");
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x0a:
+		{
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x1a:
-			{
-				printf("\n\n\tPower Available: ");
+			printf("\n\n\tNative VLAN ID: ");
+			int port_vlan = (packetData[count] << 8 | packetData[count + 1]);
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x1b:
-			{
-				printf("\n\n\tUNKNOWN: ");
+			//printf("VLAN ID: %i", port_vlan);
+			_itoa_s(port_vlan, systemvlan, 10);
+			slsystemvlan = strlen(systemvlan);
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x1c:
-			{
-				printf("\n\n\tUNKNOWN: ");
+			count += 2;
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x1d:
-			{
-				printf("\n\n\tEnergyWise: ");
+			printf("%i", port_vlan);
+			break;
+		}
+		case 0x0b:
+		{
+			printf("\n\n\tDuplex: ");
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x1e:
+			for (UINT16 x = 0; x < length; x++)
 			{
-				printf("\n\n\tUNKNOWN: ");
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x0c:
+		{
+			printf("\n\n\tDONT KNOW LOL");
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			case 0x1f:
+			for (UINT16 x = 0; x < length; x++)
 			{
-				printf("\n\n\tSpare PoE: ");
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x0d:
+		{
+			printf("\n\n\tDONT KNOW LOL");
 
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value, count - length);
-				break;
-			}
-			default :
+			for (UINT16 x = 0; x < length; x++)
 			{
-				printf("\n\n\t *** Unknown *** value = %i", value);
-				break;
+				value[x] = packetData[count];
+				count++;
 			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x0e:
+		{
+			printf("\n\n\tATA-186 VoIP VLAN request: ");
+
+			for (UINT16 x = 0; x < length; x++)
+			{
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x0f:
+		{
+			printf("\n\n\tATA-186 VoIP VLAN assignment: ");
+
+			for (UINT16 x = 0; x < length; x++)
+			{
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x10:
+		{
+			printf("\n\n\tPower Consumption: ");
+
+			for (UINT16 x = 0; x < length; x++)
+			{
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x11:
+		{
+			printf("\n\n\tMTU: ");
+
+			for (UINT16 x = 0; x < length; x++)
+			{
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x12:
+		{
+			printf("\n\n\tAVVID Trust Bitmap: ");
+
+			for (UINT16 x = 0; x < length; x++)
+			{
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x13:
+		{
+			printf("\n\n\tAVVID Untrusted Ports CoS: ");
+
+			for (UINT16 x = 0; x < length; x++)
+			{
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x14:
+		{
+			printf("\n\n\tSystem Name: ");
+
+			for (UINT16 x = 0; x < length; x++)
+			{
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x15:
+		{
+			printf("\n\n\tSystem Object ID (Not Decoded): ");
+
+			for (UINT16 x = 0; x < length; x++)
+			{
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x16:
+		{
+			printf("\n\n\tManagement Addresses: ");
+
+			for (UINT16 x = 0; x < length; x++)
+			{
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x17:
+		{
+			printf("\n\n\tPhysical Location: ");
+
+			for (UINT16 x = 0; x < length; x++)
+			{
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x18:
+		{
+			printf("\n\n\tUNKNOWN: ");
+
+			for (UINT16 x = 0; x < length; x++)
+			{
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x19:
+		{
+			printf("\n\n\tUNKNOWN: ");
+
+			for (UINT16 x = 0; x < length; x++)
+			{
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x1a:
+		{
+			printf("\n\n\tPower Available: ");
+
+			for (UINT16 x = 0; x < length; x++)
+			{
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x1b:
+		{
+			printf("\n\n\tUNKNOWN: ");
+
+			for (UINT16 x = 0; x < length; x++)
+			{
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x1c:
+		{
+			printf("\n\n\tUNKNOWN: ");
+
+			for (UINT16 x = 0; x < length; x++)
+			{
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x1d:
+		{
+			printf("\n\n\tEnergyWise: ");
+
+			for (UINT16 x = 0; x < length; x++)
+			{
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x1e:
+		{
+			printf("\n\n\tUNKNOWN: ");
+
+			for (UINT16 x = 0; x < length; x++)
+			{
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		case 0x1f:
+		{
+			printf("\n\n\tSpare PoE: ");
+
+			for (UINT16 x = 0; x < length; x++)
+			{
+				value[x] = packetData[count];
+				count++;
+			}
+			printf("%s", value, count - length);
+			break;
+		}
+		default:
+		{
+			printf("\n\n\t *** Unknown *** value = %i", value);
+			break;
+		}
 		}
 
 
@@ -1850,7 +1983,7 @@ void getDataCDP()
 }
 void getDataLLDP()
 {
-	
+
 	unsigned int count = 0;
 
 	/*
@@ -2041,8 +2174,8 @@ void getDataLLDP()
 
 			if (subtype == 3)
 			{
-			printf("\n\tMAC address %02x:%02x:%02x:%02x:%02x:%02x",
-			packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3], packetData[count + 4], packetData[count + 5]);
+				printf("\n\tMAC address %02x:%02x:%02x:%02x:%02x:%02x",
+					packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3], packetData[count + 4], packetData[count + 5]);
 				count += 6;
 			}
 			if (subtype == 5)
@@ -2272,112 +2405,15 @@ void getDataLLDP()
 
 			switch (oui_id)
 			{
-				case 0x0012bb:
+			case 0x0012bb:
+			{
+				switch (subtype)
 				{
-					switch (subtype)
-					{
-						case 0x05:
-						{
-							memcpy(&systemswMAC, packetData + count, length);
-							slsystemswMAC = strlen(systemswMAC);
-							count += length;
-							break;
-						}
-						default: 
-						{
-							for (UINT16 x = 0; x < length; x++)
-							{
-								value[x] = packetData[count];
-								count++;
-							}
-							break;
-						}
-					}
-					break;
-				}
-
-				case 0x0080c2:
+				case 0x05:
 				{
-					printf("\n\tIEEE 802.1 - ");
-					switch (subtype)
-					{
-						case 1:
-						{
-							int port_vlan = (packetData[count] << 8 | packetData[count + 1]);
-							//printf("VLAN ID: %i", port_vlan);
-							_itoa_s(port_vlan, systemvlan, 10);
-							slsystemvlan = strlen(systemvlan);
-							count += 2;
-							break;
-						}
-						case 2:
-						{
-						//	printf("VLAN ID: %i", (packetData[count] << 8 | packetData[count + 1]));
-							count += 2;
-							break;
-						}
-						default:
-						{
-							break;
-						}
-					}
-
-					break;
-				}
-				case 0x00120f:
-				{
-					//802.1AB-2009
-					//Annex F for the layout
-
-					printf("\n\t\t IEEE 802.3 - ");
-
-
-					switch (subtype)
-					{
-						case 1:
-						{
-							//F2.x
-							printf("MAC/PHY Configuration/Status: ");
-
-							//Octet 1 - bits 0 and 1 are the only ones important. This should never be greater than "3"
-							printf("\n\t\t Auto-negotiation support: %i", (packetData[count] & 0x01)); //0xfe
-							printf("\n\t\t Auto-negotiation status: %i", (packetData[count] & 0x02)); //0xfd
-							count += 1;
-
-							//Octet 2 and 3 - all bits are a value.
-
-							printf("\n\t\t PMD auto-negotiation advertised capabilities: %i", (packetData[count] << 8 | packetData[count + 1]));
-							count += 2;
-
-
-							//Octet 4 and 5
-							printf("\n\t\t Operational MAU type:%x", (packetData[count] << 8 | packetData[count + 1]));
-							count += 2;
-							break;
-						}
-						case 2:
-						{
-							printf("Power Via Medium Dependent Interface (MDI): %i", (packetData[count] << 8 | packetData[count + 1]));
-							count += 2;
-							break;
-						}
-						case 3:
-						{
-							printf("Link Aggregation (deprecated): %i", (packetData[count] << 8 | packetData[count + 1]));
-							count += 2;
-							break;
-						}
-						case 4:
-						{
-							printf("Maximum Frame Size: %i", (packetData[count] << 8 | packetData[count + 1]));
-							count += 2;
-							break;
-						}
-						default:
-						{
-							break;
-						}
-					}
+					memcpy(&systemswMAC, packetData + count, length);
+					slsystemswMAC = strlen(systemswMAC);
+					count += length;
 					break;
 				}
 				default:
@@ -2387,9 +2423,106 @@ void getDataLLDP()
 						value[x] = packetData[count];
 						count++;
 					}
-					printf("\n\t%s", value, count - length);
 					break;
 				}
+				}
+				break;
+			}
+
+			case 0x0080c2:
+			{
+				printf("\n\tIEEE 802.1 - ");
+				switch (subtype)
+				{
+				case 1:
+				{
+					int port_vlan = (packetData[count] << 8 | packetData[count + 1]);
+					//printf("VLAN ID: %i", port_vlan);
+					_itoa_s(port_vlan, systemvlan, 10);
+					slsystemvlan = strlen(systemvlan);
+					count += 2;
+					break;
+				}
+				case 2:
+				{
+					//	printf("VLAN ID: %i", (packetData[count] << 8 | packetData[count + 1]));
+					count += 2;
+					break;
+				}
+				default:
+				{
+					break;
+				}
+				}
+
+				break;
+			}
+			case 0x00120f:
+			{
+				//802.1AB-2009
+				//Annex F for the layout
+
+				printf("\n\t\t IEEE 802.3 - ");
+
+
+				switch (subtype)
+				{
+				case 1:
+				{
+					//F2.x
+					printf("MAC/PHY Configuration/Status: ");
+
+					//Octet 1 - bits 0 and 1 are the only ones important. This should never be greater than "3"
+					printf("\n\t\t Auto-negotiation support: %i", (packetData[count] & 0x01)); //0xfe
+					printf("\n\t\t Auto-negotiation status: %i", (packetData[count] & 0x02)); //0xfd
+					count += 1;
+
+					//Octet 2 and 3 - all bits are a value.
+
+					printf("\n\t\t PMD auto-negotiation advertised capabilities: %i", (packetData[count] << 8 | packetData[count + 1]));
+					count += 2;
+
+
+					//Octet 4 and 5
+					printf("\n\t\t Operational MAU type:%x", (packetData[count] << 8 | packetData[count + 1]));
+					count += 2;
+					break;
+				}
+				case 2:
+				{
+					printf("Power Via Medium Dependent Interface (MDI): %i", (packetData[count] << 8 | packetData[count + 1]));
+					count += 2;
+					break;
+				}
+				case 3:
+				{
+					printf("Link Aggregation (deprecated): %i", (packetData[count] << 8 | packetData[count + 1]));
+					count += 2;
+					break;
+				}
+				case 4:
+				{
+					printf("Maximum Frame Size: %i", (packetData[count] << 8 | packetData[count + 1]));
+					count += 2;
+					break;
+				}
+				default:
+				{
+					break;
+				}
+				}
+				break;
+			}
+			default:
+			{
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("\n\t%s", value, count - length);
+				break;
+			}
 			}
 			break;
 		}
@@ -2402,7 +2535,7 @@ void getDataLLDP()
 			for (UINT16 x = 0; x < length; x++)
 			{
 				value[x] = packetData[count];
-				count++; 
+				count++;
 			}
 			printf("\n\t%s", value, count - length);
 		}

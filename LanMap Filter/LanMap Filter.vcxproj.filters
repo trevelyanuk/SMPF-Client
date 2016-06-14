@@ -34,9 +34,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="curl\lib\libcurl.lib" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="config.ini" />
   </ItemGroup>
 </Project>
