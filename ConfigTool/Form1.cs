@@ -32,7 +32,7 @@ namespace ConfigTool
         {
             openFileDialog1.FileName = "config.ini";
             openFileDialog1.ShowDialog();
-            if (openFileDialog1.)
+           // if (openFileDialog1.)
             lines = System.IO.File.ReadAllLines(@openFileDialog1.FileName);
             variables = new String[lines.Count()][];
 
@@ -50,12 +50,29 @@ namespace ConfigTool
             saveFileDialog1.FileName = "config.ini";
             saveFileDialog1.ShowDialog();
 
+            string localUse = "local = ";
+            if (checkLocal.Checked == false)
+            {
+
+                localUse = "";
+            }
+            else if (radioCSV.Checked)
+            {
+                localUse += "CSV";
+            }
+            else if (radioSimple.Checked)
+            {
+                localUse += "SIMPLE";
+            }
+
             string[] configFile = {
                 "server = " + textServerAddress.Text,
+                "page = " + textPage.Text,
                 "network = " + textNetwork.Text,
                 "timeout = " + textTimeout.Text,
-                "protolldp = " + checkCDP.Checked,
-                "protocdp = " + checkCDP.Checked };
+                "protolldp = " + checkCDP.Checked.ToString().ToLower(),
+                "protocdp = " + checkCDP.Checked.ToString().ToLower(),
+                localUse};
 
             System.IO.File.WriteAllLines(saveFileDialog1.FileName, configFile);
 
@@ -82,17 +99,22 @@ namespace ConfigTool
                 {
                     case "server":
                         {
-                            textServerAddress.Text = line[1].ToLower();
+                            textServerAddress.Text = line[1].ToLower().Trim(' ');
                             break;
                         }
                     case "network":
                         {
-                            textNetwork.Text = line[1].ToLower();
+                            textNetwork.Text = line[1].ToLower().Trim(' ');
+                            break;
+                        }
+                    case "page":
+                        {
+                            textPage.Text = line[1].ToLower().Trim(' ');
                             break;
                         }
                     case "timeout": 
                         {
-                            textTimeout.Text = line[1].ToLower();
+                            textTimeout.Text = line[1].ToLower().Trim(' ');
                             break;
                         }
                     case "protolldp":
@@ -122,6 +144,14 @@ namespace ConfigTool
                     default: break;
                 }
             }
+        }
+
+        private void checkLocal_CheckedChanged(object sender, EventArgs e)
+        {
+            radioSimple.Enabled = !radioSimple.Enabled;
+            radioCSV.Enabled = !radioCSV.Enabled;
+            textServerAddress.Enabled = !textServerAddress.Enabled;
+            textPage.Enabled = !textPage.Enabled;
         }
     }
 }

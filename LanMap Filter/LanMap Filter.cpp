@@ -4,8 +4,11 @@
 #include "stdafx.h"
 
 #ifdef WIN32
-//#include <winsock.h>
-#pragma comment(lib, "Ws2_32.lib")
+	//#include <winsock.h>
+	#pragma comment(lib, "Ws2_32.lib")
+#endif
+#ifdef __linux__
+#include <sys/socket.h>
 #endif
 
 // include this BEFORE pcap.h
@@ -19,16 +22,19 @@
 #pragma comment (lib, "Packet.lib")
 
 
+
 // http://wxwidgets.info/cross-platform-way-of-obtaining-mac-address-of-your-machine/
 // http://www.codeguru.com/cpp/i-n/network/networkinformation/article.php/c5451/Three-ways-to-get-your-MAC-address.htm
 // Get mac address! The hacky way..
 //
 //
-#include <Iphlpapi.h>
-#pragma comment (lib,"Iphlpapi.lib")
-#pragma comment (lib,"Rpcrt4.lib")
-//
+#ifdef WIN32
+	#include <Iphlpapi.h>
+	#pragma comment (lib,"Iphlpapi.lib")
+	#pragma comment (lib,"Rpcrt4.lib")
 
+#endif
+//
 
 //CURL library
 //Need this to be static, ideally
@@ -42,7 +48,7 @@
 //http://stackoverflow.com/questions/20171165/getting-libcurl-to-work-with-visual-studio-2013
 
 
-#include <ntddndis.h> //fir gettubg tge nac address
+//#include <ntddndis.h> //fir gettubg tge nac address
 
 // Functions we will use
 
@@ -57,6 +63,7 @@ void generatePOSTData();
 void generatePOSTString();
 void wingethostname();
 void uploadString(char * address, char * data);
+int saveHost();
 
 
 void printInterface(pcap_if_t *d);
@@ -77,7 +84,7 @@ void getDataLLDP();
 void getDataCDP();
 int loadConfig();
 
-
+const char* appType = "SERVER";
 
 pcap_if_t			*	allAdapters;		//Used to store all the adapters in a list (by storing references to next adapters)
 pcap_if_t			*	adapter;			//Used to store one of the adapters in a list.
@@ -152,7 +159,7 @@ char * url;
 //..which is 256 at the time of writing
 char errorBuffer[PCAP_ERRBUF_SIZE];
 
-char tlv[];
+//char tlv[];
 
 
 
@@ -292,15 +299,17 @@ int _tmain(int argc, _TCHAR* argv[])
 {
 	loadConfig();
 
-
-
 	setAdapter();
 	initCapture();
 	capture();
 	wingethostname();
 	generatePOSTData();
 	generatePOSTString();
-	uploadString(settingsServer, postdata);
+	saveHost();
+	if (appType == "SERVER")
+	{
+		uploadString(settingsServer, postdata);
+	}
 
 	WSACleanup();
 
@@ -399,6 +408,8 @@ void GetMACaddress()//pcap_if_t * addapter_correct)
 	} while (pAdapterInfo);                    // Terminate if last adapter
 }
 
+typedef unsigned char BYTE;
+
 int TestMACaddress(BYTE *addr)
 {
 	//%02x means hex (the x) and print in the format of having 2 characters. prefixes with a 0 if theres nothing
@@ -408,11 +419,13 @@ int TestMACaddress(BYTE *addr)
 	_snprintf_s(systemmac, SZ_MAC, "%02x:%02x:%02x:%02x:%02x:%02x", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
 	slsystemmac = strlen(systemmac);
 
+
+	//This test is to rule out virtual mac addreses based on the first two octets. Can add more cases later.
 	if (addr[0] == 0x00)
 	{
 		if (addr[1] == 0x50) //or 80?
 		{
-			//Virtual mac address - so we can ignore it
+			
 			return 1;
 		}
 	}
@@ -446,7 +459,9 @@ int checkErrors()
 void *get_in_addr(struct sockaddr *sa)
 {
 	if (sa->sa_family == AF_INET)
+	{
 		return &(((struct sockaddr_in*)sa)->sin_addr);
+	}
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
@@ -587,20 +602,25 @@ char * ipToString(u_long in)
 
 	//Alright I THINK this is like 3 * 4 (xxx xxx xxx xxx = 12)
 	//+ 3 points (xxx.xxx.xxx.xxx)uchar
-	// + 1 terminating character
-	static char output[IPTOSBUFFERS][3 * 4 + 3 + 1];
-	static short which;
+	//+ 1 terminating character
+
+	//Used for multiple IP addresses.. except, we only use one here.
+	//static short which;
+	//static char output[IPTOSBUFFERS][3 * 4 + 3 + 1];
+	static char output[3 * 4 + 3 + 1];
 	u_char *p;
 
 
 	//print a long unsigned int (%lu)
 	//in));
 
-
 	p = (u_char *)&in;
-	which = (which + 1 == IPTOSBUFFERS ? 0 : which + 1);
-	_snprintf_s(output[which], sizeof(output[which]), sizeof(output[which]), "%d.%d.%d.%d", p[0], p[1], p[2], p[3]);
-	return output[which];
+	//Used for multiple IP addresses.. except, we only use one here.
+	//which = (which + 1 == IPTOSBUFFERS ? 0 : which + 1); 
+	//_snprintf_s(output[which], sizeof(output[which]), sizeof(output[which]), "%d.%d.%d.%d", p[0], p[1], p[2], p[3]);
+	//return output[which];
+	_snprintf_s(output, sizeof(output), sizeof(output), "%d.%d.%d.%d", p[0], p[1], p[2], p[3]);
+	return output;
 }
 
 char * ip6ToString(struct sockaddr *sockaddr, char *address, int addrlen)
@@ -681,7 +701,7 @@ void uploadString(char * address, char * data)
 
 
 	// We first prepare some "hints" for the "getaddrinfo" function
-	// to tell it, that we are looking for a IPv4 TCP Connection.
+	// to tell it that we are looking for an IPv4 connection.
 	struct addrinfo hints;
 	ZeroMemory(&hints, sizeof(hints));
 	hints.ai_family = AF_INET;          // We are targeting IPv4
@@ -696,7 +716,7 @@ void uploadString(char * address, char * data)
 
 	if (getAddrRes != 0 || targetAdressInfo == NULL)
 	{
-		printf("Could not resolve the hostname\n");
+		printf("\nCould not resolve the hostname.");
 
 #ifdef _DEBUG
 		system("pause");
@@ -718,30 +738,30 @@ void uploadString(char * address, char * data)
 	SOCKET webSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (webSocket == INVALID_SOCKET)
 	{
-		printf("Creation of the socket failed\n");
+		printf("\nCreation of the socket failed!");
 #ifdef _DEBUG
 		system("pause");
 #endif
 	}
 
 	// Establishing a connection to the web Socket
-	printf("Connecting...");
+	printf("\nConnecting... ");
 	if (connect(webSocket, (SOCKADDR*)&sockAddr, sizeof(sockAddr)) != 0)
 	{
-		printf("Could not connect\n");
+		printf("Could not connect");
 #ifdef _DEBUG
 		system("pause");
 #endif
 		closesocket(webSocket);
 	}
-	printf("Connected.\n");
+	printf("Connected");
 
 	// Sending a HTTP-GET-Request to the Web Server
 	const char* httpRequest = data;
 	int sentBytes = send(webSocket, httpRequest, strlen(httpRequest), 0);
 	if (sentBytes < strlen(httpRequest) || sentBytes == SOCKET_ERROR)
 	{
-		printf("Could not send the request to the Server\n");
+		printf("\nCould not send the request to the server");
 #ifdef _DEBUG
 		system("pause");
 #endif
@@ -749,17 +769,17 @@ void uploadString(char * address, char * data)
 	}
 
 	// Receiving and Displaying an answer from the Web Server
-	char buffer[10000];
-	ZeroMemory(buffer, sizeof(buffer));
-	int dataLen;
-	while ((dataLen = recv(webSocket, buffer, sizeof(buffer), 0) > 0))
-	{
-		int i = 0;
-		while (buffer[i] >= 32 || buffer[i] == '\n' || buffer[i] == '\r') {
-			printf("%c", buffer[i]);
-			i += 1;
-		}
-	}
+	//char buffer[10000];
+	//ZeroMemory(buffer, sizeof(buffer));
+	//int dataLen;
+	//while ((dataLen = recv(webSocket, buffer, sizeof(buffer), 0) > 0))
+	//{
+	//	int i = 0;
+	//	while (buffer[i] >= 32 || buffer[i] == '\n' || buffer[i] == '\r') {
+	//		printf("%c", buffer[i]);
+	//		i += 1;
+	//	}
+	//}
 
 
 	/* the CURL way
@@ -791,7 +811,7 @@ void uploadString(char * address, char * data)
 	*/
 }
 
-void printPacketData(const u_char * data, int length)
+void printPacketData(const u_char * data, int length, char * format)
 {
 	int rows = 0;
 	int rowcounter = 0;
@@ -808,7 +828,7 @@ void printPacketData(const u_char * data, int length)
 			rowcounter = 0;
 			rows++;
 		}
-		printf("%x ", data[x]);
+		printf("format", data[x]);
 	}
 }
 int setAdapter()
@@ -821,12 +841,12 @@ int setAdapter()
 		return -1;
 	}
 
-	getListOfAdapters();
+	//getListOfAdapters();
 
 
 	if ((selectedAdapterNumber = getCorrectNetwork()) == -1)
 	{
-		printf("/nNo adapters found that match the current network starting with %i", settingsNetwork);
+		printf("\nNo adapters found that match the current network starting with %i", settingsNetwork);
 	}
 
 
@@ -870,7 +890,7 @@ int initCapture()
 	//30 seconds to get an LLDP/CDP packet.
 	//Authentication on the remote machine isnt needed.. whats this about?
 	//Reference to the error buffer to use.
-	captureInstance = pcap_open(adapter->name, 65535, PCAP_OPENFLAG_PROMISCUOUS, settingsTimeout, NULL, errorBuffer);
+	captureInstance = pcap_open(adapter->name, 65535, PCAP_OPENFLAG_PROMISCUOUS, 600, NULL, errorBuffer);
 
 	if (captureInstance == NULL)
 	{
@@ -950,6 +970,9 @@ int initCapture()
 
 void capture()
 {
+	
+
+
 	/**/
 	/**/
 	// Start the capture
@@ -961,7 +984,10 @@ void capture()
 	pcap_freealldevs(allAdapters);
 	/**/
 	/**/
-
+	time_t start;
+	time_t now;
+	time(&start);
+	time(&now);
 
 
 	int retValue;
@@ -970,11 +996,17 @@ void capture()
 	while ((retValue = pcap_next_ex(captureInstance, &packetHeader, &packetData)) >= 0)
 	{
 
+		time(&now);
+		if ((now - start) > settingsTimeout)
+		{
+			printf("\nExiting: timeout has exceeded. Either increase the timeout or check to see that you are broadcasting the packets that you are checking for.");
+			exit(0);
+		}
 
 		//triggered on timeout
 		if (retValue == 0)
 		{
-			printf("\nbeep");
+			printf("\rWaiting for packets.. %i", now - start);
 
 			continue;
 		}
@@ -1268,7 +1300,7 @@ void generatePOSTData()
 
 void generatePOSTString()
 {
-	sprintf(postdata,
+	sprintf_s(postdata,
 		"POST %s HTTP/1.1\r\n"
 		"Host: %s\r\n"
 		"Content-Type: application/x-www-form-urlencoded\r\n"// this wont work! text/html"
@@ -1296,6 +1328,82 @@ void wingethostname()
 	gethostname(systemhostname, 64);
 	slsystemhostname = strlen(systemhostname);
 	//int x = WSAGetLastError();
+
+}
+
+int saveHost()
+{
+	
+
+
+	if (appType == "SIMPLE")
+	{
+		char * fileName = "PC_list.txt";
+		FILE *pFile;
+		errno_t errorCode = fopen_s(&pFile, fileName, "a");
+		if (!pFile)
+		{
+			//		fprintf(stderr, "opening %s: %s\n", argv[1], strerror(errno));
+			//	system("PAUSE");
+			return 1;
+		}
+
+		fputs(systemhostname, pFile);
+		fputs(" is connected to port ", pFile);
+		fputs(systemswitchport, pFile);
+		fputs(" on switch ", pFile);
+		fputs(systemswName, pFile);
+		fputs(" (", pFile);
+		fputs(systemswIP, pFile);
+		fputs(")\n", pFile);
+		fclose(pFile);
+
+	}
+
+	if (appType == "CSV")
+	{
+		char * fileName = "hosts.csv";
+		FILE *pFile;
+		errno_t newFileOrNot = fopen_s(&pFile, fileName, "r");
+		if (newFileOrNot == 0)
+		{
+			fclose(pFile);
+		}
+
+		errno_t errorCode = fopen_s(&pFile, fileName, "a");
+		if (!pFile)
+		{
+			//		fprintf(stderr, "opening %s: %s\n", argv[1], strerror(errno));
+			//	system("PAUSE");
+			return 1;
+		}
+
+		if (newFileOrNot == 2)
+		{
+			fputs("\"Hostname\",\"Host IP\",\"Switchport\",\"VLAN\",\"MAC Address\",\"Switch name\",\"Switch IP\",\"Switch MAC\"\n", pFile);
+
+		}
+
+		fputs("\"", pFile);
+		fputs(systemhostname, pFile);
+		fputs("\",\"", pFile);
+		fputs(systemip, pFile);
+		fputs("\",\"", pFile);
+		fputs(systemswitchport, pFile);
+		fputs("\",\"", pFile);
+		fputs(systemvlan, pFile);
+		fputs("\",\"", pFile);
+		fputs(systemmac, pFile);
+		fputs("\",\"", pFile);
+		fputs(systemswName, pFile);
+		fputs("\",\"", pFile);
+		fputs(systemswIP, pFile);
+		fputs("\",\"", pFile);
+		fputs(systemswMAC, pFile);
+		fputs("\"", pFile);
+		fputs("\n", pFile);
+		fclose(pFile);
+	}
 
 }
 
@@ -1351,7 +1459,7 @@ int loadConfig()
 			variable = strtok_s(NULL, delimiters, &next);
 			if (!variable)
 			{
-				printf("Error in configuration file: no value for server address!\n");
+				printf("\nError in configuration file: no value for server address!");
 				{
 #ifdef _DEBUG
 					system("pause");
@@ -1363,14 +1471,14 @@ int loadConfig()
 			settingsServer = (char *)malloc((strlen(variable) + 1) * sizeof(char));
 			memcpy(settingsServer, variable, strlen(variable));
 			settingsServer[strlen(variable)] = '\0';
-			printf("Server address is %s\n", variable);
+			printf("\nServer address is %s", variable);
 		}
 		else if (strcmp(variable, "page") == 0)
 		{
 			variable = strtok_s(NULL, delimiters, &next);
 			if (!variable)
 			{
-				printf("Error in configuration file: no value for page!\n");
+				printf("\nError in configuration file: no value for page!");
 				{
 #ifdef _DEBUG
 					system("pause");
@@ -1382,14 +1490,14 @@ int loadConfig()
 			settingsPage = (char *)malloc((strlen(variable) + 1) * sizeof(char));
 			memcpy(settingsPage, variable, strlen(variable));
 			settingsPage[strlen(variable)] = '\0';
-			printf("Page is %s\n", variable);
+			printf("\nPage is %s", variable);
 		}
 		else if (strcmp(variable, "network") == 0)
 		{
 			variable = strtok_s(NULL, delimiters, &next);
 			if (!variable)
 			{
-				printf("Error in configuration file: no value for network!\n");
+				printf("\nError in configuration file: no value for network!");
 				{
 #ifdef _DEBUG
 					system("pause");
@@ -1398,14 +1506,14 @@ int loadConfig()
 				}
 			}
 			settingsNetwork = atoi(variable);
-			printf("Network is %s\n", variable);
+			printf("\nNetwork is %s", variable);
 		}
 		else if (strcmp(variable, "timeout") == 0)
 		{
 			variable = strtok_s(NULL, delimiters, &next);
 			if (!variable)
 			{
-				printf("Error in configuration file: no value for timeout!\n");
+				printf("\nError in configuration file: no value for timeout!");
 				{
 #ifdef _DEBUG
 					system("pause");
@@ -1414,7 +1522,7 @@ int loadConfig()
 				}
 			}
 			settingsTimeout = atoi(variable);
-			printf("Timeout is %s\n", variable);
+			printf("\nTimeout is %s", variable);
 		}
 		else if (strcmp(variable, "protocdp") == 0)
 		{
@@ -1424,7 +1532,7 @@ int loadConfig()
 			variable = strtok_s(NULL, delimiters, &next);
 			if (!variable)
 			{
-				printf("Error in configuration file: no value for protocdp!\n");
+				printf("\nError in configuration file: no value for protocdp!");
 				{
 #ifdef _DEBUG
 					system("pause");
@@ -1441,14 +1549,14 @@ int loadConfig()
 				settingsCDP = 0;
 			}
 
-			printf("CDP is %s\n", variable);
+			printf("\nCDP is %s", variable);
 		}
 		else if (strcmp(variable, "protolldp") == 0)
 		{
 			variable = strtok_s(NULL, delimiters, &next);
 			if (!variable)
 			{
-				printf("Error in configuration file: no value for protolldp!\n");
+				printf("\nError in configuration file: no value for protolldp!");
 				{
 #ifdef _DEBUG
 					system("pause");
@@ -1464,7 +1572,31 @@ int loadConfig()
 			{
 				settingsLLDP = 0;
 			}
-			printf("LLDP is %s\n", variable);
+			printf("\nLLDP is %s", variable);
+		}
+		else if (strcmp(variable, "local") == 0)
+		{
+			variable = strtok_s(NULL, delimiters, &next);
+			if (!variable)
+			{
+				printf("\nError in configuration file: no value for locally stored captures!");
+				{
+#ifdef _DEBUG
+					system("pause");
+#endif
+					return 2;
+				}
+			}
+			if (strcmp(variable, "CSV") == 0)
+			{
+				appType = "CSV";
+			}
+			else if(strcmp(variable, "SIMPLE") == 0)
+			{
+				appType = "SIMPLE";
+			}
+
+			printf("\nLocal capture of data is stored as type: %s", variable);
 		}
 		else
 		{
@@ -1495,12 +1627,12 @@ void getDataCDP()
 
 	unsigned int count = 0;
 
+
 	/*
 	Destination MAC address - which is octet 0 - 5
 	*/
 	//%02x, rather than %x, will enforce a mininum field size - so a value of 1 becomes 01 and e becomes 0e. The 0 specifies that it should be 0 padded, the 2 represents the number of 0s.
 	printf("\tDestination MAC address:\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[0], packetData[1], packetData[2], packetData[3], packetData[4], packetData[5]);
-
 
 	/*
 	Source MAC address - which is octet 6 - 11
@@ -1577,7 +1709,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x02:
@@ -1638,7 +1770,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x05:
@@ -1650,7 +1782,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x06:
@@ -1664,7 +1796,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x07:
@@ -1676,7 +1808,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x08:
@@ -1688,7 +1820,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x09:
@@ -1700,7 +1832,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x0a:
@@ -1727,7 +1859,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x0c:
@@ -1739,7 +1871,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x0d:
@@ -1751,7 +1883,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x0e:
@@ -1763,7 +1895,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x0f:
@@ -1775,7 +1907,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x10:
@@ -1787,7 +1919,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x11:
@@ -1799,7 +1931,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x12:
@@ -1811,7 +1943,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x13:
@@ -1823,7 +1955,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x14:
@@ -1835,7 +1967,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x15:
@@ -1847,7 +1979,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x16:
@@ -1859,7 +1991,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x17:
@@ -1871,7 +2003,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x18:
@@ -1883,7 +2015,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x19:
@@ -1895,7 +2027,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x1a:
@@ -1907,7 +2039,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x1b:
@@ -1919,7 +2051,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x1c:
@@ -1931,7 +2063,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x1d:
@@ -1943,7 +2075,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x1e:
@@ -1955,7 +2087,7 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		case 0x1f:
@@ -1967,12 +2099,12 @@ void getDataCDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("%s", value, count - length);
+			printf("%s", value);//, count - length);
 			break;
 		}
 		default:
 		{
-			printf("\n\n\t *** Unknown *** value = %i", value);
+			printf("\n\n\t *** Unknown *** value = %s", value);
 			break;
 		}
 		}
@@ -1991,7 +2123,7 @@ void getDataLLDP()
 	*/
 	//%02x, rather than %x, will enforce a mininum field size - so a value of 1 becomes 01 and e becomes 0e. The 0 specifies that it should be 0 padded, the 2 represents the number of 0s.
 	printf("\tDestination MAC address:\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[0], packetData[1], packetData[2], packetData[3], packetData[4], packetData[5]);
-
+	
 
 	/*
 	Source MAC address - which is octet 6 - 11
@@ -2142,7 +2274,7 @@ void getDataLLDP()
 					value[x] = packetData[count];
 					count++;
 				}
-				printf("\n\t%s", value, count - length);
+				printf("\n\t%s", value);//, count - length);
 
 			}
 
@@ -2188,7 +2320,7 @@ void getDataLLDP()
 					value[x] = packetData[count];
 					count++;
 				}
-				printf("\n\t%s", value, count - length);
+				printf("\n\t%s", value);//, count - length);
 			}
 
 			if (subtype == 7)
@@ -2201,7 +2333,7 @@ void getDataLLDP()
 					value[x] = packetData[count];
 					count++;
 				}
-				printf("\n\t%s", value, count - length);
+				printf("\n\t%s", value);//, count - length);
 			}
 			printf("\t (Subtype: %i)", subtype);
 			break;
@@ -2230,7 +2362,7 @@ void getDataLLDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("\n\t%s", value, count - length);
+			printf("\n\t%s", value);//, count - length);
 			break;
 
 		}
@@ -2248,7 +2380,7 @@ void getDataLLDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("\n\t%s", value, count - length);
+			printf("\n\t%s", value);//, count - length);
 			break;
 		}
 
@@ -2262,7 +2394,7 @@ void getDataLLDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("\n\t%s", value, count - length);
+			printf("\n\t%s", value);//, count - length);
 
 			break;
 		}
@@ -2366,7 +2498,7 @@ void getDataLLDP()
 			printf("\n\t\tInterface subtype: %i", packetData[count]);
 			count++;
 
-			printf("\n\t\tInterface number: %l", (packetData[count] << 24 | packetData[count + 1] << 16 | packetData[count + 2] << 8 | packetData[count + 3]));
+			printf("\n\t\tInterface number: %lu", (packetData[count] << 24 | packetData[count + 1] << 16 | packetData[count + 2] << 8 | packetData[count + 3]));
 			count += 4;
 
 			int oidLength = packetData[count];
@@ -2520,7 +2652,7 @@ void getDataLLDP()
 					value[x] = packetData[count];
 					count++;
 				}
-				printf("\n\t%s", value, count - length);
+				printf("\n\t%s", value);//, count - length);
 				break;
 			}
 			}
@@ -2537,7 +2669,7 @@ void getDataLLDP()
 				value[x] = packetData[count];
 				count++;
 			}
-			printf("\n\t%s", value, count - length);
+			printf("\n\t%s", value);//, count - length);
 		}
 		}
 
