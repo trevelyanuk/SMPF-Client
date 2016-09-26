@@ -48,7 +48,10 @@
             this.label3 = new System.Windows.Forms.Label();
             this.radioSimple = new System.Windows.Forms.RadioButton();
             this.radioCSV = new System.Windows.Forms.RadioButton();
-            this.checkLocal = new System.Windows.Forms.CheckBox();
+            this.radioButton1 = new System.Windows.Forms.RadioButton();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // buttonCreate
@@ -63,7 +66,7 @@
             // 
             // textServerAddress
             // 
-            this.textServerAddress.Location = new System.Drawing.Point(12, 127);
+            this.textServerAddress.Location = new System.Drawing.Point(20, 271);
             this.textServerAddress.Name = "textServerAddress";
             this.textServerAddress.Size = new System.Drawing.Size(108, 20);
             this.textServerAddress.TabIndex = 1;
@@ -73,7 +76,7 @@
             this.checkLLDP.AutoSize = true;
             this.checkLLDP.Checked = true;
             this.checkLLDP.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkLLDP.Location = new System.Drawing.Point(12, 217);
+            this.checkLLDP.Location = new System.Drawing.Point(14, 133);
             this.checkLLDP.Name = "checkLLDP";
             this.checkLLDP.Size = new System.Drawing.Size(53, 17);
             this.checkLLDP.TabIndex = 5;
@@ -85,7 +88,7 @@
             this.checkCDP.AutoSize = true;
             this.checkCDP.Checked = true;
             this.checkCDP.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkCDP.Location = new System.Drawing.Point(71, 216);
+            this.checkCDP.Location = new System.Drawing.Point(74, 133);
             this.checkCDP.Name = "checkCDP";
             this.checkCDP.Size = new System.Drawing.Size(48, 17);
             this.checkCDP.TabIndex = 6;
@@ -94,7 +97,7 @@
             // 
             // textTimeout
             // 
-            this.textTimeout.Location = new System.Drawing.Point(234, 127);
+            this.textTimeout.Location = new System.Drawing.Point(189, 57);
             this.textTimeout.Name = "textTimeout";
             this.textTimeout.Size = new System.Drawing.Size(88, 20);
             this.textTimeout.TabIndex = 3;
@@ -103,7 +106,7 @@
             // lblTimeout
             // 
             this.lblTimeout.AutoSize = true;
-            this.lblTimeout.Location = new System.Drawing.Point(231, 111);
+            this.lblTimeout.Location = new System.Drawing.Point(186, 41);
             this.lblTimeout.Name = "lblTimeout";
             this.lblTimeout.Size = new System.Drawing.Size(94, 13);
             this.lblTimeout.TabIndex = 1;
@@ -112,7 +115,7 @@
             // lblServerAddress
             // 
             this.lblServerAddress.AutoSize = true;
-            this.lblServerAddress.Location = new System.Drawing.Point(9, 111);
+            this.lblServerAddress.Location = new System.Drawing.Point(20, 255);
             this.lblServerAddress.Name = "lblServerAddress";
             this.lblServerAddress.Size = new System.Drawing.Size(78, 13);
             this.lblServerAddress.TabIndex = 8;
@@ -144,7 +147,7 @@
             // 
             // textNetwork
             // 
-            this.textNetwork.Location = new System.Drawing.Point(12, 177);
+            this.textNetwork.Location = new System.Drawing.Point(15, 57);
             this.textNetwork.Name = "textNetwork";
             this.textNetwork.Size = new System.Drawing.Size(70, 20);
             this.textNetwork.TabIndex = 4;
@@ -152,7 +155,7 @@
             // lblNetwork
             // 
             this.lblNetwork.AutoSize = true;
-            this.lblNetwork.Location = new System.Drawing.Point(9, 161);
+            this.lblNetwork.Location = new System.Drawing.Point(12, 41);
             this.lblNetwork.Name = "lblNetwork";
             this.lblNetwork.Size = new System.Drawing.Size(146, 13);
             this.lblNetwork.TabIndex = 20;
@@ -161,7 +164,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(126, 111);
+            this.label1.Location = new System.Drawing.Point(131, 255);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(32, 13);
             this.label1.TabIndex = 21;
@@ -169,7 +172,7 @@
             // 
             // textPage
             // 
-            this.textPage.Location = new System.Drawing.Point(128, 127);
+            this.textPage.Location = new System.Drawing.Point(134, 271);
             this.textPage.Name = "textPage";
             this.textPage.Size = new System.Drawing.Size(100, 20);
             this.textPage.TabIndex = 2;
@@ -177,7 +180,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 200);
+            this.label2.Location = new System.Drawing.Point(12, 117);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(99, 13);
             this.label2.TabIndex = 23;
@@ -186,7 +189,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 63);
+            this.label3.Location = new System.Drawing.Point(20, 207);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(325, 39);
             this.label3.TabIndex = 24;
@@ -198,7 +201,7 @@
             // 
             this.radioSimple.AutoSize = true;
             this.radioSimple.Enabled = false;
-            this.radioSimple.Location = new System.Drawing.Point(15, 287);
+            this.radioSimple.Location = new System.Drawing.Point(14, 297);
             this.radioSimple.Name = "radioSimple";
             this.radioSimple.Size = new System.Drawing.Size(102, 17);
             this.radioSimple.TabIndex = 8;
@@ -210,7 +213,7 @@
             // 
             this.radioCSV.AutoSize = true;
             this.radioCSV.Enabled = false;
-            this.radioCSV.Location = new System.Drawing.Point(15, 311);
+            this.radioCSV.Location = new System.Drawing.Point(14, 320);
             this.radioCSV.Name = "radioCSV";
             this.radioCSV.Size = new System.Drawing.Size(92, 17);
             this.radioCSV.TabIndex = 9;
@@ -218,23 +221,53 @@
             this.radioCSV.Text = "Text file (CSV)";
             this.radioCSV.UseVisualStyleBackColor = true;
             // 
-            // checkLocal
+            // radioButton1
             // 
-            this.checkLocal.AutoSize = true;
-            this.checkLocal.Location = new System.Drawing.Point(13, 255);
-            this.checkLocal.Name = "checkLocal";
-            this.checkLocal.Size = new System.Drawing.Size(203, 17);
-            this.checkLocal.TabIndex = 7;
-            this.checkLocal.Text = "Use manually (ignores server settings)";
-            this.checkLocal.UseVisualStyleBackColor = true;
-            this.checkLocal.CheckedChanged += new System.EventHandler(this.checkLocal_CheckedChanged);
+            this.radioButton1.AutoSize = true;
+            this.radioButton1.Location = new System.Drawing.Point(12, 187);
+            this.radioButton1.Name = "radioButton1";
+            this.radioButton1.Size = new System.Drawing.Size(127, 17);
+            this.radioButton1.TabIndex = 25;
+            this.radioButton1.TabStop = true;
+            this.radioButton1.Text = "Upload data to server";
+            this.radioButton1.UseVisualStyleBackColor = true;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(12, 18);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(86, 13);
+            this.label4.TabIndex = 26;
+            this.label4.Text = "Network settings";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(12, 98);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(83, 13);
+            this.label5.TabIndex = 27;
+            this.label5.Text = "Capture settings";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(9, 171);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(80, 13);
+            this.label6.TabIndex = 28;
+            this.label6.Text = "Upload settings";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(340, 441);
-            this.Controls.Add(this.checkLocal);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.radioButton1);
             this.Controls.Add(this.radioCSV);
             this.Controls.Add(this.radioSimple);
             this.Controls.Add(this.label3);
@@ -284,7 +317,10 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.RadioButton radioSimple;
         private System.Windows.Forms.RadioButton radioCSV;
-        private System.Windows.Forms.CheckBox checkLocal;
+        private System.Windows.Forms.RadioButton radioButton1;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label6;
     }
 }
 
