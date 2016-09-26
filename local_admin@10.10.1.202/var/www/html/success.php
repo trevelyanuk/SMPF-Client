@@ -1,15 +1,17 @@
 <?php
 
+	//Log file start
 	file_put_contents('./log_'.date("j.n.Y").'.txt', "=================\n", FILE_APPEND);
-	//Use PDOs in future for interoperability
+	
+
 	//Server details
-	//http://stackoverflow.com/questions/5414731/are-mysql-real-escape-string-and-mysql-escape-string-sufficient-for-app-secu
 	$servername = "localhost";
 	$username = "root";
 	$password = "L3tm31nn0w!";
 	$dbname = "inventory";
 
-	//Sort of stops injection attacks. 
+	//Prevent against injection exploits 
+	//http://stackoverflow.com/questions/5414731/are-mysql-real-escape-string-and-mysql-escape-string-sufficient-for-app-secu
 	$host = mysql_escape_string($_POST['host']);
 	$ip = mysql_escape_string($_POST['ip']);
 	$swPort = mysql_escape_string($_POST['swPort']);
@@ -20,10 +22,11 @@
 	$mac = mysql_escape_string($_POST['mac']);
 	$sp = mysql_escape_string($_POST['sp']);
 	
-	//This will be the test for validation of hosts
+	//This will be the test to see if a host has changed or not (or is valid)
 	$testValid = 0;
 	$testChanged = 0;
-
+	
+	//Use PDO in future for interoperability?
 	$conn = new mysqli($servername, $username, $password, $dbname);
 	
 	if ($host == NULL)
@@ -97,17 +100,17 @@
 			file_put_contents('./log_'.date("j.n.Y").'.txt',date("H:i:s")." ".$host."Connection failed:\n", FILE_APPEND);
 		} 
 	
-		$sqlSelect = "SELECT * from hosts WHERE hostName = '$host'";
+		$sqlSelect = "SELECT * from hosts WHERE hostName = '$host'";		
 		
-		
-		$sql = "INSERT INTO hosts (hostName, hostIP, switchPort, switchIP, switchName, switchPlatform, vlanID, hostMac, switchProto, lastUpdated)		
-				VALUES ('$host', '$ip', '$swPort', '$swIP','$swName','$swMAC','$vlan','$mac', '$sp', NOW())";
-				
-				
 		$result = $conn->query($sqlSelect);
-		
+		$sqlInsert = "INSERT INTO hosts (hostName, hostIP, switchPort, switchIP, switchName, switchPlatform, vlanID, hostMac, switchProto, lastChecked, lastUpdated)		
+				VALUES ('$host', '$ip', '$swPort', '$swIP','$swName','$swMAC','$vlan','$mac', '$sp', NOW(), NOW())";
+				
+				
+				
 		if ($result->num_rows > 0) 
 		{
+			
 			$row = $result->fetch_assoc();
 			file_put_contents('./log_'.date("j.n.Y").'.txt',date("H:i:s")." ".$host." already exists!\n", FILE_APPEND);
 			
@@ -152,27 +155,22 @@
 			}
 			
 			
-			
-			
+			$sql = "UPDATE hosts SET lastChecked = NOW() WHERE hostName = '$host'";	
+			if ($conn->query($sql) === TRUE) 
+			{
+				file_put_contents('./log_'.date("j.n.Y").'.txt',date("H:i:s")." ".$host.": Checking for changes..\n", FILE_APPEND);
+			} 	
+			else 
+			{
+				file_put_contents('./log_'.date("j.n.Y").'.txt', date("H:i:s")." ".$host.": Error updating lastChecked.\n", FILE_APPEND);				
+			}
+				
 			if ($testChanged == 1)
-			{					
-				$sql = "UPDATE hosts SET lastChecked = NOW() WHERE hostName = '$host'";	
-				if ($conn->query($sql) === TRUE) 
-				{
-					file_put_contents('./log_'.date("j.n.Y").'.txt',date("H:i:s")." ".$host.": Host has changed and will be updated.\n", FILE_APPEND);
-				}
-					else 
-					{
-						file_put_contents('./log_'.date("j.n.Y").'.txt', date("H:i:s")." ".$host.": Error updating lastChecked, although host has changed.\n", FILE_APPEND);				
-					}
-				
-				
+			{		
 				
 				//$sql = "UPDATE hosts SET lastChecked = NOW(), lastUpdated = NOW(), hostIP = '$ip', switchPort = '$swPort', switchIP = '$swIP', switchName = '$swName', switchPlatform = '$swMAC', vlanID = '$vlan', hostMac = '$mac', switchProto = '$sp' WHERE hostName = '$host'";
 				//$sql = "UPDATE hosts SET lastUpdated = NOW() " . $changeString . " WHERE hostName = '$host'";		
-				
-				
-				
+								
 				$sql = "INSERT INTO history (historyDateStart,historyHostName".$changeString1.")		
 						SELECT lastUpdated,hostName".$changeString2." FROM hosts
 						WHERE hostName = '$host'";
@@ -186,8 +184,7 @@
 						file_put_contents('./log_'.date("j.n.Y").'.txt', date("H:i:s")." ".$host.": Error saving historical entry.\n", FILE_APPEND);				
 						file_put_contents('./log_'.date("j.n.Y").'.txt', " SQL string is as follows:\n".$sql."\n", FILE_APPEND);
 					
-					}
-				
+					}				
 				$sql = "UPDATE hosts SET ".$changeString." WHERE hostName = '$host'";	
 				if ($conn->query($sql) === TRUE) 
 				{
@@ -200,18 +197,13 @@
 			}
 			else
 			{	
-				$sql = "UPDATE hosts SET lastChecked = NOW() WHERE hostName = '$host'";	
-				if ($conn->query($sql) === TRUE) 
-				{
-					file_put_contents('./log_'.date("j.n.Y").'.txt',date("H:i:s")." ".$host.": Host has not changed.\n", FILE_APPEND);
-				} 		
-			}						
-			switchRecord($conn, $host, $swName, $swMAC, $swIP);
-			
+				file_put_contents('./log_'.date("j.n.Y").'.txt',date("H:i:s")." ".$host.": Host has not changed.\n", FILE_APPEND);						
+			}		
+			switchRecord($conn, $host, $swName, $swMAC, $swIP);		
 			
 		} 
 		else
-		if ($conn->query($sql) === TRUE) 
+		if ($conn->query($sqlInsert) === TRUE) 
 		{
 			file_put_contents('./log_'.date("j.n.Y").'.txt',date("H:i:s")." ".$host.": New record created successfully.\n", FILE_APPEND);
 			switchRecord($conn, $host, $swName, $swMAC, $swIP);

@@ -3,11 +3,11 @@
 	<body>
 		<center>
 			<form action="index.php" method="post">
-			Asset tag
+			Check for host
 			<p>
-				<input type="text" name="assetTag" autofocus="true" value="<?php echo$_POST[assetTag];?>">
+				<input type="text" name="host" autofocus="true" value="<?php echo$_POST[host];?>">
 			<p>
-				<input type="submit" name="assetCheckButton" value="Check Availability">
+				<input type="submit" name="hostCheckButton" value="Find Host">
 	
 	</body>	
 </html>
@@ -25,13 +25,13 @@
 	if ($conn->connect_error) {
 		die("Connection failed: " . $conn->connect_error);
 	}
-	if ($_POST[assetCheckButton])
+	if ($_POST[hostCheckButton])
 	{
-		$atag = mysql_escape_string($_POST[assetTag]);
+		$hname = mysql_escape_string($_POST[host]);
 	
-		if ($atag != NULL)
+		if ($hname != NULL)
 		{
-			$sql="SELECT assetTag, serialNumber, description, signedOut, userID, userName, dateOut FROM assets WHERE assetTag LIKE '%" . $atag . "%'"; 
+			$sql="SELECT * FROM hostHistory WHERE hostName LIKE '%" . $hname . "%'"; 
 			$result=$conn->query($sql);
 			
 			if ($result->num_rows > 0) 
