@@ -37,6 +37,14 @@
 	#pragma comment (lib,"Rpcrt4.lib")
 #endif
 
+//#define COMPILE_AS_C
+#ifdef COMPILE_AS_C
+#include <stdbool.h>
+//typedef int bool;
+//#define true 1
+//#define false 0
+#endif
+
 
 
 
