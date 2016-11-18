@@ -2,7 +2,6 @@
 // http://www.codeproject.com/Articles/30234/Introduction-to-the-WinPcap-Networking-Libraries
 
 #include "stdafx.h"
-
 // Functions we will use
 
 int TestMACaddress(BYTE *addr);
