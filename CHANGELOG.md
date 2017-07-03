@@ -17,7 +17,7 @@
   * Put it all on git or sourceforge
   * FOG module
   * Static link libraries
-  * **Use TLVs instead of currently "guessing" where data is**
+  * Use TLVs instead of currently "guessing" where data is
   * ~~Create TLVs for CDP and other protocols~~
 
 ## Change history  
