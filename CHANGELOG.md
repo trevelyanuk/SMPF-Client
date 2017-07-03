@@ -1,15 +1,16 @@
 # Change log
-## Current version - 0.1
+## Current version - 0.2
 
 * Issues
-  * Find out why CURL is so slow
+  * ~~Find out why CURL is so slow~~
   * Only checks if a packet is CDP or LLDP, with no distinction for filtering packets destined for phones. Causes incorrect submissions of entries to database.
   * Fix adapters with retained IPs
+  * Detect if wireless adapters are present and do not listen for packets on these adapters
   
 * To do 
   * More debug info
   * Name project
-  * Use TLVs instead of currently "guessing" where data is
+  * ~~Use TLVs instead of currently "guessing" where data is~~
   * Release build to have no interface at all (automated) unless run from command line
   * Create installer to bundle everything up
   * Create Mac and Linux builds
@@ -18,9 +19,25 @@
   * FOG module
   * Static link libraries
   * Use TLVs instead of currently "guessing" where data is
+  * ~~Replace CURL with native platform socket code~~
 
 
 ## Change history   
+
+### 2016-06-26
+** Version 0.2 **
+
+cURL is no more! I have sped ahead and managed to cut this out entirely by using WinSock instead of cURL. This means that no extra DLL is needed on Windows, although for consistency on different platforms and SSL support, I may go back to using cURL later and focus on not using separate DLLs.
+
+The server address in the config file now has the page, and the address, as separate items. This just makes it easier when sending the POST request to the server; cURL seemed to split this out (give it the full address, including http://, and it does internal magic to split that up as necessary) but this has to be done manually when working with sockets directly.
+
+* Issues
+  * Detect if wireless adapters are present and do not listen for packets on these adapters
+
+* Fixed
+  * Find out why CURL can be so slow
+  * Replace CURL with native platform socket code
+
 
 ### 2016-05-26
 ** Version 0.1 ** 
