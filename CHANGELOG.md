@@ -1,10 +1,10 @@
 # Change log
-## Current version - 0.0.4
+## Current version - 0.1
 
 * Issues
-  * Find out why CURL is so slow
+  * ~~Find out why CURL is so slow~~
   * Only checks if a packet is CDP or LLDP, with no distinction for filtering packets destined for phones. Causes incorrect submissions of entries to database.
-  * **Fix adapters with retained IPs**
+  * Fix adapters with retained IPs
   
 * To do 
   * More debug info
@@ -18,9 +18,16 @@
   * FOG module
   * Static link libraries
   * Use TLVs instead of currently "guessing" where data is
-  * ~~Create TLVs for CDP and other protocols~~
 
-## Change history  
+
+## Change history   
+
+### 2016-05-26
+** Version 0.1 ** 
+System is now in use somewhere and tested on ~1500 Windows 7 computers. Version can now jump to 0.1
+
+* Fixed
+  * Replace CURL with native platform socket code
   
 ### 2015-10-23
 **Version 0.0.4**
