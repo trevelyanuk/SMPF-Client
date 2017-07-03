@@ -1,5 +1,5 @@
 # Change log
-## Current version - 0.0.1
+## Current version - 0.0.3
 
 * Issues
   * Find out why CURL is so slow
@@ -9,17 +9,33 @@
   * More debug info
   * Name project
   * Use TLVs instead of currently "guessing" where data is
-  * ~~Create config file reader~~
   * Release build to have no interface at all (automated) unless run from command line
   * Create installer to bundle everything up
   * Create Mac and Linux builds
   * Create makefile and .sln files for distribution
   * Put it all on git or sourceforge
   * FOG module
-  * **Static link libraries**
+  * Static link libraries
+  * **Use TLVs instead of currently "guessing" where data is**
+  * **Create TLVs for CDP and other protocols**
   
-  
+
+
 ## Change history  
+
+### 2015-08-24
+**Version 0.0.3
+
+LLDP packets are now internally formatted to be read as TLVs, based on IEEE 802.1AB/2009.
+
+The output for text is now better formatted, too.
+
+* To do
+  * Use TLVs instead of currently "guessing" where data is
+  * Create TLVs for CDP and other protocols
+
+
+
 ### 2015-05-02
 **Version 0.0.2 (Also really really early)**
 
