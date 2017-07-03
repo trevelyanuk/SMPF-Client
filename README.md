@@ -1,6 +1,6 @@
-The client is the agent that runs on machines to grab network data. 
+The Switchy McPortFace client is a desktop application that captures switch advertisements on a local wired network to determine information about the switch and the switchport that the machine is connected to. 
 
-The core library used here is libpcap/winpcap, which - in promiscuous mode - can capture packets received by the operating system. Promiscuous mode is crucial, since we need to be able to capture layer 2 packets (ok, technically "frames", but whatever) and keep them.
+The core library used is libpcap/winpcap, which - in promiscuous mode - can capture packets received by the operating system. Promiscuous mode is crucial, since it needs to be able to capture layer 2 packets (ok, technically "frames", but whatever) and keep them. 
 
 The two main protocols that the client looks for are LLDP and CDP. There are a few other discovery protocols that I would love to be able to play with and work into the client, but in lieu of these existing (and LLDP being vendor-agnostic), I'll settle for just these two. These protocols contain similar data, formatted slightly differently, that can be extracted to provide useful information such as:
 
