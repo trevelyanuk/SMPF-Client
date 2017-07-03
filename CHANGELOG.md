@@ -13,7 +13,6 @@
   * Create installer to bundle everything up
   * Create Mac and Linux builds
   * Create makefile and .sln files for distribution
-  * Put it all on git or sourceforge
   * FOG module
   * Static link libraries
   * Tidy up screen output (\n in the right places) and ensure that debug and release have different behaviour
@@ -22,6 +21,10 @@
 
 
 ## Change history   
+### 2016-06-22
+Put everything on Github
+
+
 ### 2016-06-22
 ** Version 0.3 **
 
