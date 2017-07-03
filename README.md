@@ -1,4 +1,4 @@
-The Switchy McPortFace client is a desktop application that captures switch advertisements on a local wired network to determine information about the switch and the switchport that the machine is connected to. 
+The Switchy McPortFace client is a desktop application that captures switch advertisements on a local wired network to determine information about the switch and the switchport that the machine is connected to. Whilst many other tools out there farm this information from switches and routers via SNMP, the idea here is to capture this information from the hosts themselves, which in some scenarios may be more useful.
 
 The core library used is libpcap/winpcap, which - in promiscuous mode - can capture packets received by the operating system. Promiscuous mode is crucial, since it needs to be able to capture layer 2 packets (ok, technically "frames", but whatever) and keep them. 
 
