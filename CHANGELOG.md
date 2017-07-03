@@ -1,8 +1,7 @@
 # Change log
-## Current version - 0.2
+## Current version - 0.3
 
 * Issues
-  * ~~Find out why CURL is so slow~~
   * Only checks if a packet is CDP or LLDP, with no distinction for filtering packets destined for phones. Causes incorrect submissions of entries to database.
   * Fix adapters with retained IPs
   * Detect if wireless adapters are present and do not listen for packets on these adapters
@@ -10,7 +9,6 @@
 * To do 
   * More debug info
   * Name project
-  * ~~Use TLVs instead of currently "guessing" where data is~~
   * Release build to have no interface at all (automated) unless run from command line
   * Create installer to bundle everything up
   * Create Mac and Linux builds
@@ -18,13 +16,23 @@
   * Put it all on git or sourceforge
   * FOG module
   * Static link libraries
-  * Use TLVs instead of currently "guessing" where data is
-  * ~~Replace CURL with native platform socket code~~
+  * Tidy up screen output (\n in the right places) and ensure that debug and release have different behaviour
+  * Tidy up LLDP TLVs
+  * Tidy up CDP TLVs
 
 
 ## Change history   
+### 2016-06-22
+** Version 0.3 **
 
-### 2016-06-26
+The client now can be set to output to a log file, rather than to upload data to a server
+
+* To do 
+  * Tidy up screen output (\n in the right places) and ensure that debug and release have different behaviour
+  * Tidy up LLDP TLVs
+  * Tidy up CDP TLVs
+
+### 2016-06-06
 ** Version 0.2 **
 
 cURL is no more! I have sped ahead and managed to cut this out entirely by using WinSock instead of cURL. This means that no extra DLL is needed on Windows, although for consistency on different platforms and SSL support, I may go back to using cURL later and focus on not using separate DLLs.
@@ -57,6 +65,7 @@ Added cases for checking capture protocol used (CDP or LLDP) when uploading data
 
 * Fixed
   * Create TLVs for CDP and other protocols
+  * Use TLVs instead of currently "guessing" where data is
   
 * Issues
   * It looks like adapters will retain their IP, even if they are inactive and have been disconnected. This can result in disconnected adapters being selected as the interface to listen on, even if they aren't connected.
