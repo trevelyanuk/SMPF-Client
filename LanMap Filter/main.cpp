@@ -2081,17 +2081,17 @@ void getDataLLDP()
 		This is the physical unit that is attached to on the other end
 		The first byte after the TLV indicates the subtype
 
-		0	Reserved				—
+		0	Reserved				Â—
 		1	Chassis component		"EntPhysicalAlias when entPhysClass has a value of
-		‘chassis(3)’(IETF RFC 4133)"
+		Â‘chassis(3)Â’(IETF RFC 4133)"
 		2	Interface alias			IfAlias(IETF RFC 2863)
 		3	Port component			"EntPhysicalAlias when entPhysicalClass has a value
-		‘port(10)’ or ‘backplane(4)’(IETF RFC 4133)"
+		Â‘port(10)Â’ or Â‘backplane(4)Â’(IETF RFC 4133)"
 		4	MAC address				"MAC address(IEEE Std 802)"
 		5	Network address			IP address
 		6	Interface name			"ifName(IETF RFC 2863)"
 		7	Locally assigned		local (alphanumeric, locally assigned)
-		8–255 Reserved
+		8Â–255 Reserved
 		*/
 
 #define LLDP_CHASSIS_RESERVED		0
@@ -2157,16 +2157,16 @@ void getDataLLDP()
 		This is the port that this is connected to
 		The first byte after the TLV indicates the subtype
 
-		0		Reserved				—
+		0		Reserved				Â—
 		1		Interface alias			ifAlias (IETF RFC 2863)
 		2		Port component			entPhysicalAlias when entPhysicalClass has a value
-		‘port(10)’ or ‘backplane(4)’ (IETF RFC 4133)
+		Â‘port(10)Â’ or Â‘backplane(4)Â’ (IETF RFC 4133)
 		3		MAC address				MAC address (IEEE Std 802)
 		4		Network address			IP address
 		5		Interface name			ifName (IETF RFC 2863)
 		6		Agent circuit ID		agent circuit ID (IETF RFC 3046)
 		7		Locally assigned		local (alphanumeric, locally assigned)
-		8–255	Reserved
+		8Â–255	Reserved
 		*/
 #define LLDP_PORT_RESERVED		0
 #define LLDP_PORT_IFALIAS		1
@@ -2310,7 +2310,7 @@ void getDataLLDP()
 			The IEEE spec is wrong (page 31) as it suggests a chassis ID subtype!
 			Note that the left column is the BIT - so the final integer is a combination of all of these
 
-			1		Other								—
+			1		Other								Â—
 			2		Repeater							IETF RFC 2108
 			3		MAC Bridge							IEEE Std 802.1D
 			4		WLAN Access Point					IEEE Std 802.11 MIB
@@ -2321,7 +2321,7 @@ void getDataLLDP()
 			9		C-VLAN Component of a VLAN Bridge	IEEE Std 802.1Q
 			10		S-VLAN Component of a VLAN Bridge	IEEE Std 802.1Q
 			11		Two-port MAC Relay (TPMR)			IEEE Std 802.1Q
-			12–16	reserved
+			12Â–16	reserved
 			*/
 			case LLDP_SYSTEM_CAP:
 			{
