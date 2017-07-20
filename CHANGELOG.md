@@ -23,7 +23,7 @@
 ## Change history   
 
 ### 2017-07-20
-** Version 1.0 **
+**Version 1.0**
 
 Nothing significant has changed, this is more a milestone due to its use in the wild. It works and it has a use!
   
@@ -32,7 +32,7 @@ Put everything on Github
 
 
 ### 2016-06-22
-** Version 0.3 **
+**Version 0.3**
 
 The client now can be set to output to a log file, rather than to upload data to a server
 
@@ -42,7 +42,7 @@ The client now can be set to output to a log file, rather than to upload data to
   * Tidy up CDP TLVs
 
 ### 2016-06-06
-** Version 0.2 **
+**Version 0.2**
 
 cURL is no more! I have sped ahead and managed to cut this out entirely by using WinSock instead of cURL. This means that no extra DLL is needed on Windows, although for consistency on different platforms and SSL support, I may go back to using cURL later and focus on not using separate DLLs.
 
@@ -57,7 +57,7 @@ The server address in the config file now has the page, and the address, as sepa
 
 
 ### 2016-05-26
-** Version 0.1 ** 
+**Version 0.1** 
 System is now in use somewhere and tested on ~1500 Windows 7 computers. Version can now jump to 0.1
 
 * Todo
