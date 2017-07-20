@@ -5,7 +5,7 @@
 // Functions we will use
 
 int TestMACaddress(BYTE *addr);
-void logfileOutput(char * text);
+void LogfileOutput(char * text);
 void GetMACaddressWindows();
 void GetMACaddressLinux();
 void GetMACaddressApple();
@@ -33,7 +33,7 @@ int getCorrectNetwork();
 void getListOfAdapters();
 int hackyNetworkAddress(char* test);
 
-//C does not use pass by reference, only value. Pointers are values so we should use pointers if we want to do thisin C
+//C does not use pass by reference, only value. Pointers are values so we should use pointers if we want to do this in C
 void addStrings(char ** result, const char * prefix, const char * body, int &prefixlength, int &bodylength);
 //char * addstrings(char * result, char * prefix, char * body, int &prefixlength, int &bodylength);
 void getDataLLDP();
@@ -45,8 +45,8 @@ const char* appType = "SERVER";
 pcap_if_t			*	allAdapters;		//Used to store all the adapters in a list (by storing references to next adapters)
 pcap_if_t			*	adapter;			//Used to store one of the adapters in a list.
 pcap_t				*	captureInstance;	//Used to store a capture
-struct pcap_pkthdr	*	packetHeader;
-const u_char		*	packetData;
+struct pcap_pkthdr	*	packetHeader;		//Packet header
+const u_char		*	packetData;			//Packet data
 
 
 char * server;
@@ -99,6 +99,7 @@ char * sourceproto;
 
 char * url;
 
+//Sizes for each of the strings
 #define SZ_HOST 64
 #define SZ_IP 64
 #define SZ_SWPORT 64
@@ -106,15 +107,12 @@ char * url;
 #define SZ_MAC 17
 #define SZ_SWIP 17
 #define SZ_SWNAME 17
-#define SZ_swMAC 17
-
-
+#define SZ_SWMAC 17
 
 //Error buffer, used to store error message
 //Size of buffer is decided by PCAP_ERRBUF_SIZE..
 //..which is 256 at the time of writing
 char errorBuffer[PCAP_ERRBUF_SIZE];
-//#define SERVERNAME "http://www.troliver.com/success.php"
 char * settingsServer;
 char * settingsPage;
 int settingsNetwork;
@@ -226,7 +224,6 @@ IndexValue cdp_tlv_type[] =
 int _tmain(int argc, _TCHAR* argv[])
 {
 	loadConfig();
-
 	setCurrentAdapter();
 	initCapture();
 	capture();
@@ -243,17 +240,18 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
 	//Exit time!
-	//Pauses the system so that it will only close on user input
-	logfileOutput("");
+	LogfileOutput("");
 	return 0;
 
 }
 
-void logfileOutput(char * text)
+void LogfileOutput(char * text)
 {
 #ifdef _DEBUG
 	printf("\n");
 	printf(text);
+
+	//Pauses the system so that it will only close on user input
 	system("PAUSE");
 #endif
 
@@ -415,14 +413,14 @@ int checkErrors()
 	if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &allAdapters, errorBuffer) == -1)
 	{
 		fprintf(stderr, "Error in pcap_findalldevs_ex function: %s\n", errorBuffer);
-		logfileOutput("Error in pcap_findalldevs_ex function");
+		LogfileOutput("Error in pcap_findalldevs_ex function");
 		return -1;
 	}
 
 	//This is also an error, but it isn't bad because we might just have no adapters.
 	if (allAdapters == NULL)
 	{
-		logfileOutput("No Adapters found! Make sure WinPcap is installed.");
+		LogfileOutput("No Adapters found! Make sure WinPcap is installed.");
 		return 1;
 	}
 
@@ -561,7 +559,7 @@ void printInterface(pcap_if_t * adapter)
 			break;
 
 		default:
-			logfileOutput("Address Family Name: Unknown");
+			LogfileOutput("Address Family Name: Unknown");
 			break;
 		}
 	}
@@ -688,7 +686,7 @@ void uploadString(char * address, char * data)
 
 	if (getAddrRes != 0 || targetAdressInfo == NULL)
 	{
-		logfileOutput("Could not resolve the hostname.");
+		LogfileOutput("Could not resolve the hostname.");
 	}
 
 	// Create the Socket Address Informations, using IPv4
@@ -706,14 +704,14 @@ void uploadString(char * address, char * data)
 	SOCKET webSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (webSocket == INVALID_SOCKET)
 	{
-		logfileOutput("Creation of the socket failed!");
+		LogfileOutput("Creation of the socket failed!");
 	}
 
 	// Establishing a connection to the web Socket
 	printf("\nConnecting... ");
 	if (connect(webSocket, (SOCKADDR*)&sockAddr, sizeof(sockAddr)) != 0)
 	{
-		logfileOutput("Could not connect");
+		LogfileOutput("Could not connect");
 		closesocket(webSocket);
 	}
 	printf("Connected");
@@ -723,7 +721,7 @@ void uploadString(char * address, char * data)
 	int sentBytes = send(webSocket, httpRequest, strlen(httpRequest), 0);
 	if (sentBytes < strlen(httpRequest) || sentBytes == SOCKET_ERROR)
 	{
-		logfileOutput("Could not send the request to the server");
+		LogfileOutput("Could not send the request to the server");
 		closesocket(webSocket);
 	}
 }
@@ -864,7 +862,7 @@ int initCapture()
 			{
 				sprintf_s(packet_filter, ";");
 
-				logfileOutput("Oh dear, we didn't set any value for CDP or LLDP! This program will not be filtering any data; nothing will be receieved..");		
+				LogfileOutput("Oh dear, we didn't set any value for CDP or LLDP! This program will not be filtering any data; nothing will be receieved..");
 			}
 
 
@@ -915,7 +913,7 @@ void capture()
 		time(&now);
 		if ((now - start) > settingsTimeout)
 		{
-			logfileOutput("Exiting: timeout has exceeded. Either increase the timeout or check to see that you are broadcasting the packets that you are checking for.");
+			LogfileOutput("Exiting: timeout has exceeded. Either increase the timeout or check to see that you are broadcasting the packets that you are checking for.");
 			exit(0);
 		}
 
@@ -1221,7 +1219,7 @@ void wingethostname()
 					 //MAKEWORD does what I do later and makes one 16 bit value from 2 8 bit values (one is bitshifted)
 	if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0)
 	{
-		logfileOutput("WSAStartup failed.");
+		LogfileOutput("WSAStartup failed.");
 		exit(1);
 	}
 
@@ -1358,7 +1356,7 @@ int loadConfig()
 			variable = strtok_s(NULL, delimiters, &next);
 			if (!variable)
 			{
-				logfileOutput("Error in configuration file: no value for server address!");
+				LogfileOutput("Error in configuration file: no value for server address!");
 				return 2;
 			}
 
@@ -1372,7 +1370,7 @@ int loadConfig()
 			variable = strtok_s(NULL, delimiters, &next);
 			if (!variable)
 			{
-				logfileOutput("Error in configuration file: no value for page!");
+				LogfileOutput("Error in configuration file: no value for page!");
 				return 2;
 			}
 
@@ -1386,7 +1384,7 @@ int loadConfig()
 			variable = strtok_s(NULL, delimiters, &next);
 			if (!variable)
 			{
-				logfileOutput("Error in configuration file: no value for network!");
+				LogfileOutput("Error in configuration file: no value for network!");
 				return 2;
 			}
 			settingsNetwork = atoi(variable);
@@ -1397,7 +1395,7 @@ int loadConfig()
 			variable = strtok_s(NULL, delimiters, &next);
 			if (!variable)
 			{
-				logfileOutput("Error in configuration file: no value for timeout!");
+				LogfileOutput("Error in configuration file: no value for timeout!");
 				return 2;
 			}
 			settingsTimeout = atoi(variable);
@@ -1411,7 +1409,7 @@ int loadConfig()
 			variable = strtok_s(NULL, delimiters, &next);
 			if (!variable)
 			{
-				logfileOutput("Error in configuration file: no value for protocdp!");
+				LogfileOutput("Error in configuration file: no value for protocdp!");
 				return 2;
 			}
 			if (strcmp(variable, "true") == 0)
@@ -1430,7 +1428,7 @@ int loadConfig()
 			variable = strtok_s(NULL, delimiters, &next);
 			if (!variable)
 			{
-				logfileOutput("Error in configuration file: no value for protolldp!");
+				LogfileOutput("Error in configuration file: no value for protolldp!");
 				return 2;
 			}
 			if (strcmp(variable, "true") == 0)
@@ -1448,7 +1446,7 @@ int loadConfig()
 			variable = strtok_s(NULL, delimiters, &next);
 			if (!variable)
 			{
-				logfileOutput("Error in configuration file: no value for locally stored captures!");
+				LogfileOutput("Error in configuration file: no value for locally stored captures!");
 				return 2;
 			}
 			if (strcmp(variable, "CSV") == 0)
@@ -2081,17 +2079,17 @@ void getDataLLDP()
 		This is the physical unit that is attached to on the other end
 		The first byte after the TLV indicates the subtype
 
-		0	Reserved				Â—
+		0	Reserved				—
 		1	Chassis component		"EntPhysicalAlias when entPhysClass has a value of
-		Â‘chassis(3)Â’(IETF RFC 4133)"
+		‘chassis(3)’(IETF RFC 4133)"
 		2	Interface alias			IfAlias(IETF RFC 2863)
 		3	Port component			"EntPhysicalAlias when entPhysicalClass has a value
-		Â‘port(10)Â’ or Â‘backplane(4)Â’(IETF RFC 4133)"
+		‘port(10)’ or ‘backplane(4)’(IETF RFC 4133)"
 		4	MAC address				"MAC address(IEEE Std 802)"
 		5	Network address			IP address
 		6	Interface name			"ifName(IETF RFC 2863)"
 		7	Locally assigned		local (alphanumeric, locally assigned)
-		8Â–255 Reserved
+		8–255 Reserved
 		*/
 
 #define LLDP_CHASSIS_RESERVED		0
@@ -2157,16 +2155,16 @@ void getDataLLDP()
 		This is the port that this is connected to
 		The first byte after the TLV indicates the subtype
 
-		0		Reserved				Â—
+		0		Reserved				—
 		1		Interface alias			ifAlias (IETF RFC 2863)
 		2		Port component			entPhysicalAlias when entPhysicalClass has a value
-		Â‘port(10)Â’ or Â‘backplane(4)Â’ (IETF RFC 4133)
+		‘port(10)’ or ‘backplane(4)’ (IETF RFC 4133)
 		3		MAC address				MAC address (IEEE Std 802)
 		4		Network address			IP address
 		5		Interface name			ifName (IETF RFC 2863)
 		6		Agent circuit ID		agent circuit ID (IETF RFC 3046)
 		7		Locally assigned		local (alphanumeric, locally assigned)
-		8Â–255	Reserved
+		8–255	Reserved
 		*/
 #define LLDP_PORT_RESERVED		0
 #define LLDP_PORT_IFALIAS		1
@@ -2310,7 +2308,7 @@ void getDataLLDP()
 			The IEEE spec is wrong (page 31) as it suggests a chassis ID subtype!
 			Note that the left column is the BIT - so the final integer is a combination of all of these
 
-			1		Other								Â—
+			1		Other								—
 			2		Repeater							IETF RFC 2108
 			3		MAC Bridge							IEEE Std 802.1D
 			4		WLAN Access Point					IEEE Std 802.11 MIB
@@ -2321,7 +2319,7 @@ void getDataLLDP()
 			9		C-VLAN Component of a VLAN Bridge	IEEE Std 802.1Q
 			10		S-VLAN Component of a VLAN Bridge	IEEE Std 802.1Q
 			11		Two-port MAC Relay (TPMR)			IEEE Std 802.1Q
-			12Â–16	reserved
+			12–16	reserved
 			*/
 			case LLDP_SYSTEM_CAP:
 			{

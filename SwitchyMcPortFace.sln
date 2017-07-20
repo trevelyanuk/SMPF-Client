@@ -1,27 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LanMap Filter", "LanMap Filter\LanMap Filter.vcxproj", "{D3DF6974-1469-431A-8182-B949748AC295}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigTool", "ConfigTool\ConfigTool.csproj", "{FD95BCBC-E9D7-4E2A-9876-3969EAC77FA8}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "local_admin@10.10.1.202", "local_admin@10.10.1.202", "{8C39550B-05B7-46F8-83CB-E8EA50FAE0DB}"
-	ProjectSection(SolutionItems) = preProject
-		local_admin@10.10.1.202\var\www\html\assetadd.php = local_admin@10.10.1.202\var\www\html\assetadd.php
-		local_admin@10.10.1.202\var\www\html\assetlist.php = local_admin@10.10.1.202\var\www\html\assetlist.php
-		local_admin@10.10.1.202\var\www\html\index.php = local_admin@10.10.1.202\var\www\html\index.php
-		local_admin@10.10.1.202\var\www\html\index2.php = local_admin@10.10.1.202\var\www\html\index2.php
-		local_admin@10.10.1.202\var\www\html\index3.php = local_admin@10.10.1.202\var\www\html\index3.php
-		local_admin@10.10.1.202\var\www\html\index4.php = local_admin@10.10.1.202\var\www\html\index4.php
-		local_admin@10.10.1.202\var\www\html\log_25.5.2016.txt = local_admin@10.10.1.202\var\www\html\log_25.5.2016.txt
-		local_admin@10.10.1.202\var\www\html\log_26.5.2016.txt = local_admin@10.10.1.202\var\www\html\log_26.5.2016.txt
-		local_admin@10.10.1.202\var\www\html\newasset.php = local_admin@10.10.1.202\var\www\html\newasset.php
-		local_admin@10.10.1.202\var\www\html\signout.php = local_admin@10.10.1.202\var\www\html\signout.php
-		local_admin@10.10.1.202\var\www\html\success.php = local_admin@10.10.1.202\var\www\html\success.php
-		local_admin@10.10.1.202\var\www\html\update.php = local_admin@10.10.1.202\var\www\html\update.php
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,18 +25,6 @@ Global
 		{D3DF6974-1469-431A-8182-B949748AC295}.Release|Mixed Platforms.ActiveCfg = Release|Win32
 		{D3DF6974-1469-431A-8182-B949748AC295}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{D3DF6974-1469-431A-8182-B949748AC295}.Release|Win32.ActiveCfg = Release|Win32
-		{FD95BCBC-E9D7-4E2A-9876-3969EAC77FA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FD95BCBC-E9D7-4E2A-9876-3969EAC77FA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FD95BCBC-E9D7-4E2A-9876-3969EAC77FA8}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{FD95BCBC-E9D7-4E2A-9876-3969EAC77FA8}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{FD95BCBC-E9D7-4E2A-9876-3969EAC77FA8}.Debug|Win32.ActiveCfg = Debug|Any CPU
-		{FD95BCBC-E9D7-4E2A-9876-3969EAC77FA8}.Debug|Win32.Build.0 = Debug|Any CPU
-		{FD95BCBC-E9D7-4E2A-9876-3969EAC77FA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FD95BCBC-E9D7-4E2A-9876-3969EAC77FA8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FD95BCBC-E9D7-4E2A-9876-3969EAC77FA8}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{FD95BCBC-E9D7-4E2A-9876-3969EAC77FA8}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{FD95BCBC-E9D7-4E2A-9876-3969EAC77FA8}.Release|Win32.ActiveCfg = Release|Any CPU
-		{FD95BCBC-E9D7-4E2A-9876-3969EAC77FA8}.Release|Win32.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
