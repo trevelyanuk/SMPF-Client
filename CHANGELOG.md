@@ -1,5 +1,5 @@
 # Change log
-## Current version - 0.3
+## Current version - 1.0
 
 * Issues
   * Only checks if a packet is CDP or LLDP, with no distinction for filtering packets destined for phones. Causes incorrect submissions of entries to database.
@@ -21,6 +21,12 @@
 
 
 ## Change history   
+
+### 2017-07-20
+** Version 1.0 **
+
+Nothing significant has changed, this is more a milestone due to its use in the wild. It works and it has a use!
+  
 ### 2017-07-03
 Put everything on Github
 
