@@ -6,6 +6,11 @@
 
 int TestMACaddress(BYTE *addr);
 void LogfileOutput(char * text);
+
+void GetHostNameWindows();
+void GetHostNameLinux();
+void GetHostNameApple();
+void GetHostName();
 void GetMACaddressWindows();
 void GetMACaddressLinux();
 void GetMACaddressApple();
@@ -16,7 +21,6 @@ int initCapture();
 void capture();
 void generatePOSTData();
 void generatePOSTString();
-void wingethostname();
 void uploadString(char * address, char * data);
 int saveHost();
 
@@ -224,29 +228,37 @@ IndexValue cdp_tlv_type[] =
 int _tmain(int argc, _TCHAR* argv[])
 {
 	loadConfig();
-	setCurrentAdapter();
-	initCapture();
-	capture();
-	wingethostname();
-	generatePOSTData();
-	generatePOSTString();
-	saveHost();
-	if (appType == "SERVER")
+	
+	if (setCurrentAdapter() > 0)
 	{
-		uploadString(settingsServer, postdata);
+		initCapture();
+		capture();
+
+		GetHostName();
+		GetMACaddress();
+
+		generatePOSTData();
+		generatePOSTString();
+		saveHost();
+		if (appType == "SERVER")
+		{
+			uploadString(settingsServer, postdata);
+		}
+
+		WSACleanup();
 	}
-
-	WSACleanup();
-
-
 	//Exit time!
 	LogfileOutput("");
 	return 0;
 
 }
 
+//Create a file that logs all the debug strings. 
+//It takes a string of text and then adds it to the log
 void LogfileOutput(char * text)
 {
+
+	//If we are running this in debug, then we display it on the screen
 #ifdef _DEBUG
 	printf("\n");
 	printf(text);
@@ -262,8 +274,10 @@ void LogfileOutput(char * text)
 	timeinfo = localtime(&rawtime);
 	char * timeywimey = asctime(timeinfo);
 	timeywimey[strlen(timeywimey) - 1] = 0;
+	
+	//Needs to be made into a relative path or something!
+	char * fileName = "C:/ProgramData/switchyMcLogFile.txt"; 
 
-	char * fileName = "C:/ProgramData/switchyMcLogFile.txt";
 	FILE *pFile;
 	errno_t errorCode = fopen_s(&pFile, fileName, "a");
 	if (!pFile)
@@ -295,24 +309,57 @@ int getCorrectNetwork()
 			printf("\nComputer is currently attached to the %d network through adapter %d", settingsNetwork, temp1);
 			printf("\n");
 
-
-
-			//unsigned char MACData[6];
-
-			//UUID uuid;
-			//UuidCreateSequential(&uuid);    // Ask OS to create UUID
-
-			//for (int i = 2; i<8; i++)  // Bytes 2 through 7 inclusive 
-			//	// are MAC address
-			//	MACData[i - 2] = uuid.Data4[i];
-
-			GetMACaddress();// adapter);
-							//	system("PAUSE");
 			return temp1;
 		}
 	}
+	//Fail
 	return -1;
 }
+
+//I hate that this has the same name as the WinSock gethostname and that its only case sensitivity that separates them!
+void GetHostName()
+{
+#ifdef _WIN32
+	GetHostNameWindows();
+#endif 
+#ifdef __linux__
+	GetHostNameLinux();
+#endif 
+#ifdef __APPLE__
+	GetHostNameApple();
+#endif
+}
+void GetHostNameApple()
+{
+	gethostname(systemhostname, 64);
+	slsystemhostname = strlen(systemhostname);
+}
+void GetHostNameLinux()
+{
+	gethostname(systemhostname, 64);
+	slsystemhostname = strlen(systemhostname);
+}
+//explain this under "other useful stuff"
+void GetHostNameWindows()
+{
+	WSADATA wsaData; //Or WSAData wsaData;
+
+					 //MAKEWORD does what I do later and makes one 16 bit value from 2 8 bit values (one is bitshifted)
+	if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0)
+	{
+		LogfileOutput("WSAStartup failed.");
+		exit(1);
+	}
+
+	//Might have to use uname?
+	//Use a temporary variable to get the system hostname and store the length
+	gethostname(systemhostname, 64);
+	slsystemhostname = strlen(systemhostname);
+	//int x = WSAGetLastError();
+
+}
+
+
 void GetMACaddress()
 {
 #ifdef _WIN32
@@ -337,7 +384,7 @@ void GetMACaddressWindows()//pcap_if_t * addapter_correct)
 	IP_ADAPTER_INFO AdapterInfo[16];       // Allocate information for up to 16 NICs
 	DWORD dwBufLen = sizeof(AdapterInfo);  // Save memory size of buffer
 
-	DWORD dwStatus = GetAdaptersInfo(      // Call GetAdapterInfo
+	DWORD dwStatus = GetAdaptersInfo(      // Get list of adapters on system
 		AdapterInfo,                 // [out] buffer to receive data
 		&dwBufLen);                  // [in] size of receive data buffer
 									 //assert(dwStatus == ERROR_SUCCESS);  // Verify return value is valid, no buffer overflow
@@ -353,31 +400,6 @@ void GetMACaddressWindows()//pcap_if_t * addapter_correct)
 		{
 			TestMACaddress(pAdapterInfo->Address);
 		}
-
-			/*
-					if (pAdapterInfo->IpAddressList.IpAddress.String[2] == '.')
-					{
-						temp1 = (pAdapterInfo->IpAddressList.IpAddress.String[0] - '0') * 10;
-						temp2 = (pAdapterInfo->IpAddressList.IpAddress.String[1] - '0') * 1;
-						temp3 = 0;
-					}
-					else
-					{
-						temp1 = (pAdapterInfo->IpAddressList.IpAddress.String[0] - '0') * 100;
-						temp2 = (pAdapterInfo->IpAddressList.IpAddress.String[1] - '0') * 10;
-						temp3 = (pAdapterInfo->IpAddressList.IpAddress.String[2] - '0') * 1;
-					}
-					temp4 = temp1 + temp2 + temp3;
-					if (temp4 == settingsNetwork) //just going to assume one adapter has one address, here.. please don't come back to haunt me later...
-					{
-						// Test MAC address to see if its a VMWare address
-						TestMACaddress(pAdapterInfo->Address);
-					}
-						//	if (TestMACaddress(pAdapterInfo->Address))
-					//		{
-					//			test = 1;
-					//		}
-					*/
 		pAdapterInfo = pAdapterInfo->Next;    // Progress through linked list
 	} 
 	while (pAdapterInfo);                    // Terminate if last adapter
@@ -439,8 +461,20 @@ void *get_in_addr(struct sockaddr *sa)
 //This is what we use to compare the interfaces against our network identity.
 bool testTargetNetwork(pcap_if_t * adapter)
 {
+	IP_ADAPTER_INFO AdapterInfo[16];       // Allocate information for up to 16 NICs
+	DWORD dwBufLen = sizeof(AdapterInfo);  // Save memory size of buffer
+
+	DWORD dwStatus = GetAdaptersInfo(      // Get list of adapters on system
+		AdapterInfo,                 // [out] buffer to receive data
+		&dwBufLen);                  // [in] size of receive data buffer
+									 //assert(dwStatus == ERROR_SUCCESS);  // Verify return value is valid, no buffer overflow
+
+	PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo; // Contains pointer to
+												 // current adapter info
+
+
 	//Store the IP in this char array called test
-	char test[INET6_ADDRSTRLEN];
+	char selectedAdapterIPaddress[INET6_ADDRSTRLEN];
 
 	//Store the IP address(es) of the adapter in this pointer
 	pcap_addr_t * adapterAddress;
@@ -450,17 +484,34 @@ bool testTargetNetwork(pcap_if_t * adapter)
 
 		if (adapterAddress->addr->sa_family == AF_INET)
 		{
+			// ipToString(((struct sockaddr_in *)adapterAddress->addr)->sin_addr.s_addr)); ???
 			inet_ntop(adapterAddress->addr->sa_family,
 				get_in_addr((struct sockaddr *)adapterAddress->addr),
-				test,
-				sizeof(test));
+				selectedAdapterIPaddress,
+				sizeof(selectedAdapterIPaddress));
 		}
 	}
+	do
+	{
+		if (*(pAdapterInfo->IpAddressList.IpAddress.String) == *selectedAdapterIPaddress)
+		{
+			if ((pAdapterInfo->Type == MIB_IF_TYPE_ETHERNET) && (WINVER > _WIN32_WINNT_WS03))
+			{
+			}
+			else
+			{
+				//LogfileOutput("Either the version of Windows is too low or the selected adapter is wireless");
+				return false;
+			}
+		}	
+		pAdapterInfo = pAdapterInfo->Next;    // Progress through linked list
+	} 
+	while (pAdapterInfo);
 
 	//strlen makes sure we stop at \0
 	//Copy this over so we can use it as the string to submit later
-	slsystemip = strlen(test);
-	memcpy(systemip, test, slsystemip);
+	slsystemip = strlen(selectedAdapterIPaddress);
+	memcpy(systemip, selectedAdapterIPaddress, slsystemip);
 	//slsystemip = strlen(systemip);
 
 	//REALLY dodgy way to do this. Implies that the first three digits will always be an IP address.
@@ -478,7 +529,7 @@ bool testTargetNetwork(pcap_if_t * adapter)
 
 
 
-	return (hackyNetworkAddress(test) == settingsNetwork);
+	return (hackyNetworkAddress(selectedAdapterIPaddress) == settingsNetwork);
 
 
 }
@@ -761,7 +812,9 @@ int setCurrentAdapter()
 
 	if ((selectedAdapterNumber = getCorrectNetwork()) == -1)
 	{
+		LogfileOutput("No Ethernet adapters found that match the target network");
 		printf("\nNo adapters found that match the current network starting with %i", settingsNetwork);
+		return -1;
 	}
 
 
@@ -1210,26 +1263,6 @@ void generatePOSTString()
 
 
 
-//explain this under "other useful stuff"
-
-void wingethostname()
-{
-	WSADATA wsaData; //Or WSAData wsaData;
-
-					 //MAKEWORD does what I do later and makes one 16 bit value from 2 8 bit values (one is bitshifted)
-	if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0)
-	{
-		LogfileOutput("WSAStartup failed.");
-		exit(1);
-	}
-
-	//Might have to use uname?
-	//Use a temporary variable to get the system hostname and store the length
-	gethostname(systemhostname, 64);
-	slsystemhostname = strlen(systemhostname);
-	//int x = WSAGetLastError();
-
-}
 
 int saveHost()
 {
