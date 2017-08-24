@@ -8,7 +8,8 @@
 //#include "targetver.h"
 
 #include <stdio.h>
-#include <tchar.h>
+
+//#include <tchar.h>
 
 #include "tlvcdp.h"
 #include "tlvlldp.h"
@@ -18,7 +19,12 @@
 #pragma comment(lib, "Ws2_32.lib")
 #endif
 #ifdef __linux__
+#include <stdlib.h>
+#include <ctime>
+#include <cstring>
 #include <sys/socket.h>
+#include <sys/unistd.h>
+#include <arpa/inet.h>
 #endif
 
 // include this BEFORE pcap.h
@@ -27,7 +33,7 @@
 #define HAVE_REMOTE
 
 //WinPcap libraries. This can be done in the project C++/Linker properties
-#include "pcap.h"
+#include <pcap/pcap.h>
 #ifdef WIN32
 	#pragma comment (lib, "wpcap.lib")
 #endif
