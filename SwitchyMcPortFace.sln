@@ -5,26 +5,54 @@ VisualStudioVersion = 15.0.26228.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LanMap Filter", "LanMap Filter\LanMap Filter.vcxproj", "{D3DF6974-1469-431A-8182-B949748AC295}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SMPF-Client-Linux", "SMPF-Client-Linux\SMPF-Client-Linux.vcxproj", "{735A9580-1AC1-4939-8079-1F42386BA0A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|ARM = Debug|ARM
 		Debug|Mixed Platforms = Debug|Mixed Platforms
 		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
 		Release|Any CPU = Release|Any CPU
+		Release|ARM = Release|ARM
 		Release|Mixed Platforms = Release|Mixed Platforms
 		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{D3DF6974-1469-431A-8182-B949748AC295}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{D3DF6974-1469-431A-8182-B949748AC295}.Debug|Any CPU.Build.0 = Debug|Win32
+		{D3DF6974-1469-431A-8182-B949748AC295}.Debug|ARM.ActiveCfg = Debug|Win32
 		{D3DF6974-1469-431A-8182-B949748AC295}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{D3DF6974-1469-431A-8182-B949748AC295}.Debug|Mixed Platforms.Build.0 = Debug|Win32
 		{D3DF6974-1469-431A-8182-B949748AC295}.Debug|Win32.ActiveCfg = Debug|Win32
 		{D3DF6974-1469-431A-8182-B949748AC295}.Debug|Win32.Build.0 = Debug|Win32
+		{D3DF6974-1469-431A-8182-B949748AC295}.Debug|x64.ActiveCfg = Debug|Win32
 		{D3DF6974-1469-431A-8182-B949748AC295}.Release|Any CPU.ActiveCfg = Release|Win32
+		{D3DF6974-1469-431A-8182-B949748AC295}.Release|ARM.ActiveCfg = Release|Win32
 		{D3DF6974-1469-431A-8182-B949748AC295}.Release|Mixed Platforms.ActiveCfg = Release|Win32
 		{D3DF6974-1469-431A-8182-B949748AC295}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{D3DF6974-1469-431A-8182-B949748AC295}.Release|Win32.ActiveCfg = Release|Win32
+		{D3DF6974-1469-431A-8182-B949748AC295}.Release|x64.ActiveCfg = Release|Win32
+		{735A9580-1AC1-4939-8079-1F42386BA0A7}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{735A9580-1AC1-4939-8079-1F42386BA0A7}.Debug|ARM.ActiveCfg = Debug|ARM
+		{735A9580-1AC1-4939-8079-1F42386BA0A7}.Debug|ARM.Build.0 = Debug|ARM
+		{735A9580-1AC1-4939-8079-1F42386BA0A7}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{735A9580-1AC1-4939-8079-1F42386BA0A7}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{735A9580-1AC1-4939-8079-1F42386BA0A7}.Debug|Win32.ActiveCfg = Debug|x86
+		{735A9580-1AC1-4939-8079-1F42386BA0A7}.Debug|Win32.Build.0 = Debug|x86
+		{735A9580-1AC1-4939-8079-1F42386BA0A7}.Debug|x64.ActiveCfg = Debug|x64
+		{735A9580-1AC1-4939-8079-1F42386BA0A7}.Debug|x64.Build.0 = Debug|x64
+		{735A9580-1AC1-4939-8079-1F42386BA0A7}.Release|Any CPU.ActiveCfg = Release|x86
+		{735A9580-1AC1-4939-8079-1F42386BA0A7}.Release|ARM.ActiveCfg = Release|ARM
+		{735A9580-1AC1-4939-8079-1F42386BA0A7}.Release|ARM.Build.0 = Release|ARM
+		{735A9580-1AC1-4939-8079-1F42386BA0A7}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{735A9580-1AC1-4939-8079-1F42386BA0A7}.Release|Mixed Platforms.Build.0 = Release|x86
+		{735A9580-1AC1-4939-8079-1F42386BA0A7}.Release|Win32.ActiveCfg = Release|x86
+		{735A9580-1AC1-4939-8079-1F42386BA0A7}.Release|Win32.Build.0 = Release|x86
+		{735A9580-1AC1-4939-8079-1F42386BA0A7}.Release|x64.ActiveCfg = Release|x64
+		{735A9580-1AC1-4939-8079-1F42386BA0A7}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
