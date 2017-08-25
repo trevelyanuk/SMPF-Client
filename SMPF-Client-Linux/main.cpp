@@ -194,11 +194,11 @@ typedef unsigned int DWORD;
 // _tmain resolves to main (ascii) or wmain (unicode)
 // _tmain should use _TCHAR
 //http://stackoverflow.com/questions/895827/what-is-the-difference-between-tmain-and-main-in-c
-int _tmain(int argc, _TCHAR* argv[])
+int main(int argc, _TCHAR* argv[])
 {
 	loadConfig();
 
-	if (setCurrentAdapter() > 0)
+	if (setCurrentAdapter() >= 0)
 	{
 		initCapture();
 		capture();
@@ -217,7 +217,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		//WSACleanup();
 	}
 	//Exit time!
-	LogfileOutput("");
+	LogfileOutput("Exiting");
 	return 0;
 
 }
@@ -436,19 +436,8 @@ void *get_in_addr(struct sockaddr *sa)
 //This is what we use to compare the interfaces against our network identity.
 bool testTargetNetwork(pcap_if_t * adapter)
 {
-	IP_ADAPTER_INFO AdapterInfo[16];       // Allocate information for up to 16 NICs
-	DWORD dwBufLen = sizeof(AdapterInfo);  // Save memory size of buffer
 
-	DWORD dwStatus = GetAdaptersInfo(      // Get list of adapters on system
-		AdapterInfo,                 // [out] buffer to receive data
-		&dwBufLen);                  // [in] size of receive data buffer
-									 //assert(dwStatus == ERROR_SUCCESS);  // Verify return value is valid, no buffer overflow
-
-	PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo; // Contains pointer to
-												 // current adapter info
-
-
-												 //Store the IP in this char array called test
+	//Store the IP in this char array called test
 	char selectedAdapterIPaddress[INET6_ADDRSTRLEN];
 
 	//Store the IP address(es) of the adapter in this pointer
@@ -466,22 +455,27 @@ bool testTargetNetwork(pcap_if_t * adapter)
 				sizeof(selectedAdapterIPaddress));
 		}
 	}
-	#define MIB_IF_TYPE_ETHERNET 6
+#define MIB_IF_TYPE_ETHERNET 6
+
+
+
+	/*
 	do
 	{
-		if (*(pAdapterInfo->IpAddressList.IpAddress.String) == *selectedAdapterIPaddress)
-		{
-			if (pAdapterInfo->Type == MIB_IF_TYPE_ETHERNET)
-			{
-			}
-			else
-			{
-				//LogfileOutput("Selected adapter is wireless");
-				return false;
-			}
-		}
-		pAdapterInfo = pAdapterInfo->Next;    // Progress through linked list
+	if (*(pAdapterInfo->IpAddressList.IpAddress.String) == *selectedAdapterIPaddress)
+	{
+	if (pAdapterInfo->Type == MIB_IF_TYPE_ETHERNET)
+	{
+	}
+	else
+	{
+	//LogfileOutput("Selected adapter is wireless");
+	return false;
+	}
+	}
+	pAdapterInfo = pAdapterInfo->Next;    // Progress through linked list
 	} while (pAdapterInfo);
+	*/
 
 	//strlen makes sure we stop at \0
 	//Copy this over so we can use it as the string to submit later
@@ -699,7 +693,7 @@ void uploadString(char * address, char * data)
 	// We first prepare some "hints" for the "getaddrinfo" function
 	// to tell it that we are looking for an IPv4 connection.
 	struct addrinfo hints;
-	ZeroMemory(&hints, sizeof(hints));
+	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET;          // We are targeting IPv4
 	hints.ai_protocol = IPPROTO_TCP;    // We are targeting TCP
 	hints.ai_socktype = SOCK_STREAM;    // We are targeting TCP so its SOCK_STREAM
@@ -707,7 +701,10 @@ void uploadString(char * address, char * data)
 										// Aquiring of the IPv4 address of a host using the newer
 										// "getaddrinfo" function which outdated "gethostbyname".
 										// It will search for IPv4 addresses using the TCP-Protocol.
+
+
 	struct addrinfo* targetAdressInfo = NULL;
+
 	DWORD getAddrRes = getaddrinfo(address, NULL, &hints, &targetAdressInfo);
 
 	if (getAddrRes != 0 || targetAdressInfo == NULL)
@@ -717,13 +714,17 @@ void uploadString(char * address, char * data)
 
 	// Create the Socket Address Informations, using IPv4
 	// We dont have to take care of sin_zero, it is only used to extend the length of SOCKADDR_IN to the size of SOCKADDR
-	SOCKADDR_IN sockAddr;
+	sockaddr_in sockAddr;
 	sockAddr.sin_addr = ((struct sockaddr_in*) targetAdressInfo->ai_addr)->sin_addr;    // The IPv4 Address from the Address Resolution Result
 	sockAddr.sin_family = AF_INET;  // IPv4
 	sockAddr.sin_port = htons(80);  // HTTP Port: 80
 
 									// We have to free the Address-Information from getaddrinfo again
 	freeaddrinfo(targetAdressInfo);
+
+#define INVALID_SOCKET -1
+#define SOCKET_ERROR -1
+	typedef int SOCKET;
 
 	// Creation of a socket for the communication with the Web Server,
 	// using IPv4 and the TCP-Protocol
@@ -735,10 +736,10 @@ void uploadString(char * address, char * data)
 
 	// Establishing a connection to the web Socket
 	printf("\nConnecting... ");
-	if (connect(webSocket, (SOCKADDR*)&sockAddr, sizeof(sockAddr)) != 0)
+	if (connect(webSocket, (sockaddr*)&sockAddr, sizeof(sockAddr)) != 0)
 	{
 		LogfileOutput("Could not connect");
-		closesocket(webSocket);
+		close(webSocket);
 	}
 	printf("Connected");
 
@@ -748,7 +749,7 @@ void uploadString(char * address, char * data)
 	if (sentBytes < strlen(httpRequest) || sentBytes == SOCKET_ERROR)
 	{
 		LogfileOutput("Could not send the request to the server");
-		closesocket(webSocket);
+		close(webSocket);
 	}
 }
 
@@ -822,7 +823,7 @@ int setCurrentAdapter()
 
 int initCapture()
 {
-
+#define PCAP_OPENFLAG_PROMISCUOUS 1
 	/**/
 	/**/
 	//Opens a new packet capture on the selected adapter, identified by its name
@@ -833,11 +834,11 @@ int initCapture()
 	//30 seconds to get an LLDP/CDP packet.
 	//Authentication on the remote machine isnt needed.. whats this about?
 	//Reference to the error buffer to use.
-	captureInstance = pcap_open(adapter->name, 65535, PCAP_OPENFLAG_PROMISCUOUS, 600, NULL, errorBuffer);
+	captureInstance = pcap_open_live(adapter->name, 65535, PCAP_OPENFLAG_PROMISCUOUS, 600, errorBuffer);
 
 	if (captureInstance == NULL)
 	{
-		fprintf(stderr, "\nUnable to open the adapter %s\n", adapter->name);
+		fprintf(stderr, "\nUnable to open the adapter %s : %s \n", adapter->name, errorBuffer);
 		pcap_freealldevs(allAdapters);
 		//Pauses the system so that it will only close on user input
 #ifdef _DEBUG
@@ -906,7 +907,7 @@ int initCapture()
 
 	//Set the filter to be that which we specified above
 	struct bpf_program fcode;
-	pcap_compile(captureInstance, &fcode, packet_filter, 1, ((struct sockaddr_in *)(adapter->addresses->netmask))->sin_addr.S_un.S_addr);
+	pcap_compile(captureInstance, &fcode, packet_filter, 1, ((struct sockaddr_in *)(adapter->addresses->netmask))->sin_addr.s_addr);
 	pcap_setfilter(captureInstance, &fcode);
 
 	return 0;
@@ -1350,7 +1351,7 @@ int loadConfig()
 		char * variable;
 		//strtok will return a pointer to a string of characters which are separated by whatever we tell it to separate
 		//by, such as an =. It will return the address at the point of the first string of chars.
-		variable = strtok_s(buffer2[linesRead], delimiters, &next);
+		variable = strtok_r(buffer2[linesRead], delimiters, &next);
 
 		//Probably a blank, skip this one
 		if (!variable)
@@ -1360,7 +1361,7 @@ int loadConfig()
 
 		if (strcmp(variable, "server") == 0)
 		{
-			variable = strtok_s(NULL, delimiters, &next);
+			variable = strtok_r(NULL, delimiters, &next);
 			if (!variable)
 			{
 				LogfileOutput("Error in configuration file: no value for server address!");
@@ -1374,7 +1375,7 @@ int loadConfig()
 		}
 		else if (strcmp(variable, "page") == 0)
 		{
-			variable = strtok_s(NULL, delimiters, &next);
+			variable = strtok_r(NULL, delimiters, &next);
 			if (!variable)
 			{
 				LogfileOutput("Error in configuration file: no value for page!");
@@ -1388,7 +1389,7 @@ int loadConfig()
 		}
 		else if (strcmp(variable, "network") == 0)
 		{
-			variable = strtok_s(NULL, delimiters, &next);
+			variable = strtok_r(NULL, delimiters, &next);
 			if (!variable)
 			{
 				LogfileOutput("Error in configuration file: no value for network!");
@@ -1399,7 +1400,7 @@ int loadConfig()
 		}
 		else if (strcmp(variable, "timeout") == 0)
 		{
-			variable = strtok_s(NULL, delimiters, &next);
+			variable = strtok_r(NULL, delimiters, &next);
 			if (!variable)
 			{
 				LogfileOutput("Error in configuration file: no value for timeout!");
@@ -1413,7 +1414,7 @@ int loadConfig()
 
 			//null means that it will carry on scanning from where the previous strtok ended
 			//Means we can carry on with the same line
-			variable = strtok_s(NULL, delimiters, &next);
+			variable = strtok_r(NULL, delimiters, &next);
 			if (!variable)
 			{
 				LogfileOutput("Error in configuration file: no value for protocdp!");
@@ -1432,7 +1433,7 @@ int loadConfig()
 		}
 		else if (strcmp(variable, "protolldp") == 0)
 		{
-			variable = strtok_s(NULL, delimiters, &next);
+			variable = strtok_r(NULL, delimiters, &next);
 			if (!variable)
 			{
 				LogfileOutput("Error in configuration file: no value for protolldp!");
@@ -1450,7 +1451,7 @@ int loadConfig()
 		}
 		else if (strcmp(variable, "local") == 0)
 		{
-			variable = strtok_s(NULL, delimiters, &next);
+			variable = strtok_r(NULL, delimiters, &next);
 			if (!variable)
 			{
 				LogfileOutput("Error in configuration file: no value for locally stored captures!");
@@ -1703,7 +1704,8 @@ void getDataCDP()
 			int port_vlan = (packetData[count] << 8 | packetData[count + 1]);
 
 			//printf("VLAN ID: %i", port_vlan);
-			itoa(port_vlan, systemvlan, 10);
+			//itoa(port_vlan, systemvlan, 10);
+			sprintf(systemvlan, "%d", port_vlan);
 			slsystemvlan = strlen(systemvlan);
 
 			count += 2;
@@ -2485,7 +2487,8 @@ void getDataLLDP()
 				{
 					int port_vlan = (packetData[count] << 8 | packetData[count + 1]);
 					//printf("VLAN ID: %i", port_vlan);
-					itoa(port_vlan, systemvlan, 10);
+					//itoa(port_vlan, systemvlan, 10);
+					sprintf(systemvlan, "%d", port_vlan);
 					slsystemvlan = strlen(systemvlan);
 					count += 2;
 					break;

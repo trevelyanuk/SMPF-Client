@@ -25,6 +25,8 @@
 #include <sys/socket.h>
 #include <sys/unistd.h>
 #include <arpa/inet.h>
+#include <netdb.h>
+#include <netinet/in.h>
 #endif
 
 // include this BEFORE pcap.h
