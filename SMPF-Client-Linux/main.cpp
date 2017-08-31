@@ -184,11 +184,6 @@ typedef unsigned char BYTE;
 typedef char _TCHAR;
 typedef unsigned int DWORD;
 
-
-
-#define _snprintf_s  snprintf;
-#define _sprintf_s  sprintf;
-#define sprintf_s  sprintf;
 // Note:
 // Expands to a type; either for Unicode or ASCII.
 // _tmain resolves to main (ascii) or wmain (unicode)
@@ -387,7 +382,7 @@ int TestMACaddress(BYTE *addr)
 	printf("\nMac Address: %02x:%02x:%02x:%02x:%02x:%02x", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
 
 
-	_snprintf_s(systemmac, SZ_MAC, "%02x:%02x:%02x:%02x:%02x:%02x", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+	snprintf(systemmac, SZ_MAC, "%02x:%02x:%02x:%02x:%02x:%02x", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
 	slsystemmac = strlen(systemmac);
 
 
@@ -609,9 +604,9 @@ char * ipToString(u_long in)
 	p = (u_char *)&in;
 	//Used for multiple IP addresses.. except, we only use one here.
 	//which = (which + 1 == IPTOSBUFFERS ? 0 : which + 1); 
-	//_snprintf_s(output[which], sizeof(output[which]), sizeof(output[which]), "%d.%d.%d.%d", p[0], p[1], p[2], p[3]);
+	//snprintf(output[which], sizeof(output[which]), sizeof(output[which]), "%d.%d.%d.%d", p[0], p[1], p[2], p[3]);
 	//return output[which];
-	_snprintf_s(output, sizeof(output), sizeof(output), "%d.%d.%d.%d", p[0], p[1], p[2], p[3]);
+	snprintf(output, sizeof(output), "%d.%d.%d.%d", p[0], p[1], p[2], p[3]);
 	return output;
 }
 
@@ -873,23 +868,23 @@ int initCapture()
 
 	if (settingsCDP && settingsLLDP)
 	{
-		sprintf_s(packet_filter, "ether[12:2] = 0x88cc or ether[20:2] = 0x2000");
+		sprintf(packet_filter, "ether[12:2] = 0x88cc or ether[20:2] = 0x2000");
 	}
 	else
 		if (settingsCDP)
 		{
-			sprintf_s(packet_filter, "ether[20:2] = 0x2000");
+			sprintf(packet_filter, "ether[20:2] = 0x2000");
 
 		}
 		else
 			if (settingsLLDP)
 			{
-				sprintf_s(packet_filter, "ether[12:2] = 0x88cc");
+				sprintf(packet_filter, "ether[12:2] = 0x88cc");
 
 			}
 			else
 			{
-				sprintf_s(packet_filter, ";");
+				sprintf(packet_filter, ";");
 
 				LogfileOutput("Oh dear, we didn't set any value for CDP or LLDP! This program will not be filtering any data; nothing will be receieved..");
 			}
@@ -1020,7 +1015,7 @@ void capture()
 			if (settingsLLDP)
 			{
 				getDataLLDP();
-				sprintf_s(systemsourceproto, "LLDP");
+				sprintf(systemsourceproto, "LLDP");
 				slsystemsourceproto = strlen(systemsourceproto);
 			}
 		}
@@ -1028,7 +1023,7 @@ void capture()
 		else
 		{
 			getDataCDP();
-			sprintf_s(systemsourceproto, "CDP");
+			sprintf(systemsourceproto, "CDP");
 			slsystemsourceproto = strlen(systemsourceproto);
 		}
 
@@ -1227,7 +1222,7 @@ void generatePOSTData()
 
 void generatePOSTString()
 {
-	sprintf_s(postdata,
+	sprintf(postdata,
 		"POST %s HTTP/1.1\r\n"
 		"Host: %s\r\n"
 		"Content-Type: application/x-www-form-urlencoded\r\n"// this wont work! text/html
@@ -1599,7 +1594,7 @@ void getDataCDP()
 					count += 2;
 
 
-					sprintf_s(systemswIP, "%i.%i.%i.%i", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3]);
+					sprintf(systemswIP, "%i.%i.%i.%i", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3]);
 					printf(systemswIP);
 					slsystemswIP = strlen(systemswIP);
 					count += addressLength;
@@ -2084,7 +2079,7 @@ void getDataLLDP()
 			}
 			if (subtype == LLDP_CHASSIS_MAC)
 			{
-				sprintf_s(systemswMAC, "%02x:%02x:%02x:%02x:%02x:%02x", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3], packetData[count + 4], packetData[count + 5]);
+				sprintf(systemswMAC, "%02x:%02x:%02x:%02x:%02x:%02x", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3], packetData[count + 4], packetData[count + 5]);
 				printf("\n\tMAC address:\n\t");
 				printf(systemswMAC);
 				slsystemswMAC = strlen(systemswMAC);
@@ -2335,7 +2330,7 @@ void getDataLLDP()
 			{
 			case LLDP_ADDR_IP4: //IPv4
 			{
-				sprintf_s(systemswIP, "%i.%i.%i.%i", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3]);
+				sprintf(systemswIP, "%i.%i.%i.%i", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3]);
 				printf("\n\tIP address: ");
 				printf(systemswIP);
 				slsystemswIP = strlen(systemswIP);
