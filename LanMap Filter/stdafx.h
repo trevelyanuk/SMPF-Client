@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <tchar.h>
+#include <string>
 
 #include "tlvcdp.h"
 #include "tlvlldp.h"
@@ -47,15 +48,6 @@
 //#define true 1
 //#define false 0
 #endif
-
-
-
-
-
-
-
-
-
 
 // To read
 
