@@ -3,7 +3,6 @@
 //LLDP TLV Headers
 #define LLDP	0x88cc
 
-
 /*
 
 Type and length = 2 octets (7 and 9 bits)
