@@ -1,18 +1,69 @@
-// stdafx.h : include file for standard system include files,
-// or project specific include files that are used frequently, but
-// are changed infrequently
-//
-
 #pragma once
 
 //#include "targetver.h"
 
 #include <stdio.h>
 #include <tchar.h>
-#include <string>
-
 #include "tlvcdp.h"
 #include "tlvlldp.h"
+#include "dissectors.h"
+
+const char* appType = "SERVER";
+
+typedef unsigned char BYTE;
+
+struct TLV
+{
+	int type;
+	int length;
+	char* value;
+};
+
+struct IndexValue
+{
+	int index;
+	char* value;
+};
+
+IndexValue lldp_tlv_type[] =
+{
+	{ LLDP_END, "End of LLDPDU" },
+	{ LLDP_CHASSIS_ID, "Chassis ID" },
+	{ LLDP_PORT_ID, "Port ID" },
+	{ LLDP_TTL, "Time To Live" },
+	{ LLDP_PORT_DESC, "Port Description" },
+	{ LLDP_SYSTEM_NAME, "System Name" },
+	{ LLDP_SYSTEM_DESC, "System Description" },
+	{ LLDP_SYSTEM_CAP, "System Capabilities" },
+	{ LLDP_MGMT_ADDR, "Management Address" },
+	{ LLDP_ORG_SPEC, "Organisation-specific LLDP" },
+};
+
+IndexValue cdp_tlv_type[] =
+{
+	{ 0x01, "Device-ID" },
+	{ 0x02, "Address" },
+	{ 0x03, "Port-ID" },
+	{ 0x04, "Capability" },
+	{ 0x05, "Version String" },
+	{ 0x06, "Platform" },
+	{ 0x07, "Prefixes" },
+	{ 0x08, "Protocol-Hello Option" },
+	{ 0x09, "VTP Management Domain" },
+	{ 0x0a, "Native VLAN ID" },
+	{ 0x0b, "Duplex" },
+	{ 0x0e, "ATA-186 VoIP VLAN request" },
+	{ 0x0f, "ATA-186 VoIP VLAN assignment" },
+	{ 0x10, "Power Consumption" },
+	{ 0x11, "MTU" },
+	{ 0x12, "AVVID trust bitmap" },
+	{ 0x13, "AVVID untrusted ports CoS" },
+	{ 0x14, "System Name" },
+	{ 0x15, "System Object ID (not decoded)" },
+	{ 0x16, "Management Addresses" },
+	{ 0x17, "Physical Location" },
+	{ 0, NULL }
+};
 
 #ifdef WIN32
 //#include <winsock.h>
@@ -91,15 +142,11 @@ http://www.codeguru.com/cpp/i-n/network/networkinformation/article.php/c5451/Thr
 
 //#include <ntddndis.h> //fir gettubg tge nac address
 
-
-
 //CURL library
 //Need this to be static, ideally
 #define CURL_STATICLIB
 #include "curl/curl.h"
 #pragma comment ( lib, "libcurl.lib" )
-
-
 
 //#define _USE_IP_AND_MASK 
 //For now just use the first octet to determine if its the network address. 
@@ -108,10 +155,6 @@ http://www.codeguru.com/cpp/i-n/network/networkinformation/article.php/c5451/Thr
 #define CORPORATE_ADDRESS	"10.1.0.0";
 #define CORPORATE_MASK		"255.255.255.0";
 #endif
-
-
-
-
 
 // Receiving and Displaying an answer from the Web Server
 //char buffer[10000];
@@ -155,5 +198,3 @@ http://www.codeguru.com/cpp/i-n/network/networkinformation/article.php/c5451/Thr
 
 			curl_global_cleanup();
 */
-
-
