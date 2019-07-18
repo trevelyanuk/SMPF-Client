@@ -27,6 +27,12 @@
     <ClInclude Include="tlvcdp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HostDetails.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dissectors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -38,7 +44,10 @@
     <ClCompile Include="cdp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lldp.cpp">
+    <ClCompile Include="HostDetails.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dissectors.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
