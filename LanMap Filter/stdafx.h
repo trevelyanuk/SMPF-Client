@@ -66,6 +66,7 @@ IndexValue cdp_tlv_type[] =
 };
 
 #ifdef WIN32
+typedef unsigned char   u_char;
 //#include <winsock.h>
 #pragma comment(lib, "Ws2_32.lib")
 #endif

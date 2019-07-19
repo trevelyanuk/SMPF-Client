@@ -15,6 +15,6 @@ class HostDetails
 	void GetMACaddressLinux();
 	void GetMACaddressApple();
 	void GetMACaddress();
-	int IsVirtualMacAddress(BYTE*);
+	bool IsVirtualMacAddress(BYTE*);
 };
 
