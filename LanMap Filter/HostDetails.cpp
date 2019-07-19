@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "HostDetails.h"
 
 class HostDetails {
@@ -105,38 +106,38 @@ class HostDetails {
 		} while (pAdapterInfo);                    // Terminate if last adapter
 	}
 
-	int HostDetails::IsVirtualMacAddress(BYTE* addr)
+	bool HostDetails::IsVirtualMacAddress(BYTE* addr)
 	{
 		//VMWare
 			if ((addr[0] == 0x00) && (addr[1] == 0x50)  && (addr[2] == 0x56))
 			{
-				return 1;
+				return true;
 			}
 			if ((addr[0] == 0x00) && (addr[1] == 0x0c) && (addr[2] == 0x29))
 			{
-				return 1;
+				return true;
 			}
 		//XenSource
 			if ((addr[0] == 0x00) && (addr[1] == 0x16) && (addr[2] == 0x3e))
 			{
-				return 1;
+				return true;
 			}
 		//KVM
 			if ((addr[0] == 0x52) && (addr[1] == 0x54) && (addr[2] == 0x00))
 			{
-				return 1;
+				return true;
 			}
 		//Microsoft
 			if ((addr[0] == 0x00) && (addr[1] == 0x03) && (addr[2] == 0xff))
 			{
-				return 1;
+				return true;
 			}
 		//Virtual Iron
 			if ((addr[0] == 0x00) && (addr[1] == 0x0f) && (addr[2] == 0x4b))
 			{
-				return 1;
+				return true;
 			}
 		
-		return 0;
+		return false;
 	}
 };
