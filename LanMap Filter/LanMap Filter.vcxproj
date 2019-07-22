@@ -89,7 +89,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="dissectors.h" />
-    <ClInclude Include="HostDetails.h" />
     <ClInclude Include="Poststring.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -97,7 +96,6 @@
     <ClInclude Include="tlvlldp.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="HostDetails.cpp" />
     <ClCompile Include="LanMap Filter.cpp" />
     <ClCompile Include="dissectors.cpp" />
     <ClCompile Include="Poststring.cpp" />

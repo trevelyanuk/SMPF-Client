@@ -7,73 +7,18 @@
 #include "tlvcdp.h"
 #include "tlvlldp.h"
 #include "dissectors.h"
-
-const char* appType = "SERVER";
-
-typedef unsigned char BYTE;
-
-struct TLV
-{
-	int type;
-	int length;
-	char* value;
-};
-
-struct IndexValue
-{
-	int index;
-	char* value;
-};
-
-IndexValue lldp_tlv_type[] =
-{
-	{ LLDP_END, "End of LLDPDU" },
-	{ LLDP_CHASSIS_ID, "Chassis ID" },
-	{ LLDP_PORT_ID, "Port ID" },
-	{ LLDP_TTL, "Time To Live" },
-	{ LLDP_PORT_DESC, "Port Description" },
-	{ LLDP_SYSTEM_NAME, "System Name" },
-	{ LLDP_SYSTEM_DESC, "System Description" },
-	{ LLDP_SYSTEM_CAP, "System Capabilities" },
-	{ LLDP_MGMT_ADDR, "Management Address" },
-	{ LLDP_ORG_SPEC, "Organisation-specific LLDP" },
-};
-
-IndexValue cdp_tlv_type[] =
-{
-	{ 0x01, "Device-ID" },
-	{ 0x02, "Address" },
-	{ 0x03, "Port-ID" },
-	{ 0x04, "Capability" },
-	{ 0x05, "Version String" },
-	{ 0x06, "Platform" },
-	{ 0x07, "Prefixes" },
-	{ 0x08, "Protocol-Hello Option" },
-	{ 0x09, "VTP Management Domain" },
-	{ 0x0a, "Native VLAN ID" },
-	{ 0x0b, "Duplex" },
-	{ 0x0e, "ATA-186 VoIP VLAN request" },
-	{ 0x0f, "ATA-186 VoIP VLAN assignment" },
-	{ 0x10, "Power Consumption" },
-	{ 0x11, "MTU" },
-	{ 0x12, "AVVID trust bitmap" },
-	{ 0x13, "AVVID untrusted ports CoS" },
-	{ 0x14, "System Name" },
-	{ 0x15, "System Object ID (not decoded)" },
-	{ 0x16, "Management Addresses" },
-	{ 0x17, "Physical Location" },
-	{ 0, NULL }
-};
+#include "Poststring.h"
 
 #ifdef WIN32
-typedef unsigned char   u_char;
+typedef unsigned char BYTE;
+typedef unsigned char u_char;
 //#include <winsock.h>
 #pragma comment(lib, "Ws2_32.lib")
 #endif
 #ifdef __linux__
 #include <sys/socket.h>
 #endif
-
+#pragma once
 // include this BEFORE pcap.h
 // This will then use remote-ext.h
 // https://www.winpcap.org/pipermail/winpcap-users/2008-June/002576.html

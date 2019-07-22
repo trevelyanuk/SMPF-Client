@@ -6,13 +6,15 @@ void LogfileOutput(char * text, int errorLevel);
 
 bool AdapterHasOctet(pcap_if_t* adapter, int firstOctet);
 void GetSwitchData();
-void GetHostData();
+int GetHostname();
 int GetAdapterList();
+bool IsVirtualMacAddress(BYTE*);
 int FindAdapterForNetwork(int octet);
 int InitCapture();
 void StartCapture();
+int SaveData(char* data);
 int UploadData(char * address, char * data);
-
+int saveHost();
 void printInterface(pcap_if_t *d);
 //char * testTargetNetwork(pcap_if_t * adapter);
 //bool doesnt exist in C
@@ -37,7 +39,10 @@ pcap_t				*	captureInstance;	//Used to store a capture
 struct pcap_pkthdr	*	packetHeader;		//Packet header
 const u_char		*	packetData;			//Packet data
 
+char* correctAdapterName;
 char * server;
+
+char* appType = "SERVER";
 
 //Error buffer, used to store error message
 //Size of buffer is decided by PCAP_ERRBUF_SIZE..
@@ -52,10 +57,26 @@ int settingsLLDP;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	LoadConfig();
-	GetAdapterList();
-	FindAdapterForNetwork(settingsNetwork);
-	HostDetails::GetHostData();
+	if (LoadConfig() < 0)
+	{
+		return -1;
+	}
+
+	if (GetHostname() < 0)
+	{
+		return -1;
+	}
+
+	if (GetAdapterList() < 0)
+	{
+		return -1;
+	}
+
+	if (FindAdapterForNetwork(settingsNetwork) < 0)
+	{
+		return -1;
+	}
+
 	GetSwitchData();
 
 	SaveData(Poststring::GeneratePOSTString(settingsServer, settingsPage));
@@ -65,47 +86,61 @@ int _tmain(int argc, _TCHAR* argv[])
 	return 0;
 }
 
-void SaveData(char * postData)
+int GetHostname()
 {
-	if (appType == "SERVER")
+#ifdef _WIN32
+	WSADATA wsaData; //Or WSAData wsaData;
+
+							 //MAKEWORD does what I do later and makes one 16 bit value from 2 8 bit values (one is bitshifted)
+	if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0)
 	{
-		UploadData(settingsServer, postData);
-	}
-}
-int FindAdapterForNetwork(int firstOctet)
-{
-	int selectedAdapterIndex = 0;
-	int temp1;
-
-	//originally was allAdapters->next - but this has to be the current adapter otherwise it will only ever check the first two!!!
-	for (adapter = allAdapters; adapter; adapter = adapter->next)
-	{
-		++temp1;
-		if (AdapterHasOctet(adapter, settingsNetwork))
-		{
-
-
-			printf("\nComputer is currently attached to the %d network through adapter %d", settingsNetwork, temp1);
-			printf("\n");
-
-			selectedAdapterIndex = temp1;
-		}
-	}
-	//Is anything beyond here actually needed?
-	if (selectedAdapterIndex == -1)
-	{
-		LogfileOutput("No Ethernet adapters found that match the target network", 2);
+		LogfileOutput("WSAStartup failed.", 2);
 		return -1;
 	}
 
-	adapter = allAdapters;
+	gethostname(Poststring::systemhostname, 64);
+	Poststring::slsystemhostname = strlen(Poststring::systemhostname);
 
-	//selectedAdapterNumber - 1 is necessary because i 0 will actually be adapter 1
-	for (int i = 0; i < selectedAdapterIndex - 1; i++)
+	//int x = WSAGetLastError();
+#endif 
+#ifdef __linux__
+	gethostname(systemhostname, 64);
+	slsystemhostname = strlen(systemhostname);
+#endif 
+#ifdef __APPLE__
+	gethostname(systemhostname, 64);
+	slsystemhostname = strlen(systemhostname);
+#endif
+	return 0;
+}
+
+int SaveData(char * postData)
+{
+	if (appType == "SERVER")
 	{
-		adapter = adapter->next;
+		return UploadData(settingsServer, postData);
+	}
+	else
+	{
+		return saveHost();
 	}
 	return 0;
+}
+int FindAdapterForNetwork(int firstOctet)
+{
+	for (adapter = allAdapters; adapter; adapter = adapter->next)
+	{
+		if (AdapterHasOctet(adapter, settingsNetwork))
+		{
+			printf("\nComputer is currently attached to the %d network through adapter %d", settingsNetwork, correctAdapterName);
+			printf("\n");
+
+			return 0;
+		}
+	}
+
+	LogfileOutput("No Ethernet adapters found that match the target network", 2);
+	return -1;
 }
 
 void GetSwitchData()
@@ -126,7 +161,7 @@ int GetAdapterList()
 	if (allAdapters == NULL)
 	{
 		LogfileOutput("No Adapters found! Make sure WinPcap is installed.", 2);
-		return 1;
+		return -1;
 	}
 
 	return 0;
@@ -139,7 +174,21 @@ void LogfileOutput(char * message, int errorLevel)
 	//If we are running this in debug, then we display it on the screen
 #ifdef _DEBUG
 	printf("\n");
+
+	if (errorLevel == 0)
+	{
+		printf("\n[Info]: ");
+	}
+	if (errorLevel == 1)
+	{
+		printf("\n[Warning]: ");
+	}
+	if (errorLevel == 2)
+	{
+		printf("\n[Error]: ");
+	}
 	printf(message);
+	printf("\n");
 
 	//Pauses the system so that it will only close on user input
 	system("PAUSE");
@@ -181,7 +230,11 @@ void *get_in_addr(struct sockaddr *socket_address)
 	return &(((struct sockaddr_in6*)socket_address)->sin6_addr);
 }
 
-//This is what we use to compare the interfaces against our network identity.
+
+//Todo: iterate through all interfaces,wait for 40ish seconds, then return. 
+//Could take a bit longer for a run, but we dont have to check their IPs
+//Still rule out wireless and virtual IPs though..
+
 bool AdapterHasOctet(pcap_if_t * adapter, int firstOctet)
 {
 	IP_ADAPTER_INFO AdapterInfo[16];       // Allocate information for up to 16 NICs
@@ -194,64 +247,122 @@ bool AdapterHasOctet(pcap_if_t * adapter, int firstOctet)
 	PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo; // Contains pointer to
 												 // current adapter info
 
-
+	
 	//Store the IP in this char array called test
 	char selectedAdapterIPaddress[INET6_ADDRSTRLEN];
 
 	//Store the IP address(es) of the adapter in this pointer
 	pcap_addr_t * adapterAddress;
 
+	//Go through all of this adapter's addresses, get the IP address.
 	for (adapterAddress = adapter->addresses; adapterAddress; adapterAddress = adapterAddress->next)
 	{
-
 		if (adapterAddress->addr->sa_family == AF_INET)
 		{
 			// ipToString(((struct sockaddr_in *)adapterAddress->addr)->sin_addr.s_addr)); ???
 			inet_ntop(adapterAddress->addr->sa_family,
-				get_in_addr((struct sockaddr *)adapterAddress->addr),
+				get_in_addr((struct sockaddr*)adapterAddress->addr),
 				selectedAdapterIPaddress,
 				sizeof(selectedAdapterIPaddress));
+
+			//For each interface with an IP, check if its not ethernet, or is virtual. 
+			//This is also used to obtain the correct IP and MAC address and returns true
+			//If it doesnt return true, here, then it will fall through and return false eventually
+			do
+			{
+				if (*(pAdapterInfo->IpAddressList.IpAddress.String) == *selectedAdapterIPaddress)
+				{
+					BYTE* macAddress = pAdapterInfo->Address;
+
+					if (IsVirtualMacAddress(macAddress))
+					{
+						//LogfileOutput("Looks like a virtual MAC address", 1);
+						return false;
+					}
+
+					if (pAdapterInfo->Type != MIB_IF_TYPE_ETHERNET)
+					{
+						//LogfileOutput("Not an Ethernet connection", 1);
+						//Wireless = IF_TYPE_IEEE80211
+						return false;
+					}
+
+					if (WINVER < _WIN32_WINNT_WS03)
+					{
+						LogfileOutput("Current version of Windows is too low", 1);
+						return false;
+					}
+
+					int temp1, temp2, temp3;
+
+					if (selectedAdapterIPaddress[2] == '.')
+					{
+						temp1 = (selectedAdapterIPaddress[0] - '0') * 10;
+						temp2 = (selectedAdapterIPaddress[1] - '0') * 1;
+						temp3 = 0;
+					}
+					else
+					{
+						temp1 = (selectedAdapterIPaddress[0] - '0') * 100;
+						temp2 = (selectedAdapterIPaddress[1] - '0') * 10;
+						temp3 = (selectedAdapterIPaddress[2] - '0') * 1;
+					}
+
+					if (temp1 + temp2 + temp3 == firstOctet)
+					{
+						correctAdapterName = pAdapterInfo->Description;
+						Poststring::slsystemip = strlen(selectedAdapterIPaddress);
+						memcpy(Poststring::systemip, selectedAdapterIPaddress, Poststring::slsystemip);
+
+						printf("\nIP Address:%s", Poststring::systemip);
+
+						Poststring::slsystemmac = strlen(Poststring::systemmac);
+						_snprintf_s(Poststring::systemmac, SZ_MAC, "%02x:%02x:%02x:%02x:%02x:%02x", macAddress[0], macAddress[1], macAddress[2], macAddress[3], macAddress[4], macAddress[5]);
+
+						printf("\nMAC Address: %s", Poststring::systemmac);
+						return true;
+					}					
+				}
+				pAdapterInfo = pAdapterInfo->Next;    // Progress through linked list
+			} while (pAdapterInfo);
 		}
 	}
-	do
+	return false;
+}
+
+bool IsVirtualMacAddress(BYTE* addr)
+{
+	//VMWare
+	if ((addr[0] == 0x00) && (addr[1] == 0x50) && (addr[2] == 0x56))
 	{
-		if (*(pAdapterInfo->IpAddressList.IpAddress.String) == *selectedAdapterIPaddress)
-		{
-			if ((pAdapterInfo->Type == MIB_IF_TYPE_ETHERNET) && (WINVER > _WIN32_WINNT_WS03))
-			{
-			}
-			else
-			{
-				//LogfileOutput("Either the version of Windows is too low or the selected adapter is wireless");
-				return false;
-			}
-		}	
-		pAdapterInfo = pAdapterInfo->Next;    // Progress through linked list
-	} 
-	while (pAdapterInfo);
-
-	//strlen makes sure we stop at \0
-	//Copy this over so we can use it as the string to submit later
-	Poststring::slsystemip = strlen(selectedAdapterIPaddress);
-	memcpy(Poststring::systemip, selectedAdapterIPaddress, Poststring::slsystemip);
-	//slsystemip = strlen(systemip);
-
-	int temp1, temp2, temp3;
-
-	if (selectedAdapterIPaddress[2] == '.')
-	{
-		temp1 = (selectedAdapterIPaddress[0] - '0') * 10;
-		temp2 = (selectedAdapterIPaddress[1] - '0') * 1;
-		temp3 = 0;
+		return true;
 	}
-	else
+	if ((addr[0] == 0x00) && (addr[1] == 0x0c) && (addr[2] == 0x29))
 	{
-		temp1 = (selectedAdapterIPaddress[0] - '0') * 100;
-		temp2 = (selectedAdapterIPaddress[1] - '0') * 10;
-		temp3 = (selectedAdapterIPaddress[2] - '0') * 1;
+		return true;
+	}
+	//XenSource
+	if ((addr[0] == 0x00) && (addr[1] == 0x16) && (addr[2] == 0x3e))
+	{
+		return true;
+	}
+	//KVM
+	if ((addr[0] == 0x52) && (addr[1] == 0x54) && (addr[2] == 0x00))
+	{
+		return true;
+	}
+	//Microsoft
+	if ((addr[0] == 0x00) && (addr[1] == 0x03) && (addr[2] == 0xff))
+	{
+		return true;
+	}
+	//Virtual Iron
+	if ((addr[0] == 0x00) && (addr[1] == 0x0f) && (addr[2] == 0x4b))
+	{
+		return true;
 	}
 
-	return (temp1 + temp2 + temp3 == firstOctet);
+	return false;
 }
 
 // Prints information about an interface. 
@@ -694,6 +805,8 @@ int saveHost()
 
 int LoadConfig()
 {
+	LogfileOutput("Starting Switchy McPortface\n", 0);
+
 	char * fileName = "config.ini";
 	//FILE *pFile = fopen_s(fileName, "r");
 	FILE *pFile;
@@ -707,7 +820,8 @@ int LoadConfig()
 	{
 		//		fprintf(stderr, "opening %s: %s\n", argv[1], strerror(errno));
 		//	system("PAUSE");
-		return 1;
+		LogfileOutput("The config file failed to open. Does it exist in the right place?", 2);
+		return -1;
 	}
 
 	size_t linesRead = 0;
