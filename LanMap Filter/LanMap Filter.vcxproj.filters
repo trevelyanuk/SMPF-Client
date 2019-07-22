@@ -27,12 +27,24 @@
     <ClInclude Include="tlvcdp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="dissectors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Poststring.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LanMap Filter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dissectors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Poststring.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
