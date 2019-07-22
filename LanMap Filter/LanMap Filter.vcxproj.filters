@@ -27,9 +27,6 @@
     <ClInclude Include="tlvcdp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HostDetails.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="dissectors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -42,9 +39,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LanMap Filter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HostDetails.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dissectors.cpp">

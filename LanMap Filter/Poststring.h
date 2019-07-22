@@ -20,7 +20,7 @@ public:
 	static char* prefixip;
 	static char* ip;
 
-	static char systemhostname[32];
+	static char systemhostname[64];
 	static int slsystemhostname;
 	static char* prefixhost;
 	static char* host;
@@ -62,8 +62,8 @@ public:
 
 	static char* url;
 
-	static void GeneratePOSTData() {};
-	static void addStrings(char** result, const char* prefix, const char* body, int& prefixlength, int& bodylength) {};
-	static char* GeneratePOSTString(char* settingsServer, char* settingsPage) {};
+	static void GeneratePOSTData();
+	static void addStrings(char** result, const char* prefix, const char* body, int& prefixlength, int& bodylength);
+	static char* GeneratePOSTString(char* settingsServer, char* settingsPage);
 };
 

@@ -1,3 +1,4 @@
+#pragma once
 #include "stdafx.h"
 #include "Poststring.h"
 
@@ -95,3 +96,50 @@ void Poststring::addStrings(char** result, const char* prefix, const char* body,
 	prefixlength = strlen(*result);
 }
 
+char Poststring::postdata[512] = {};
+char Poststring::systemip[32] = {};
+int Poststring::slsystemip = 0;
+char* Poststring::prefixip = NULL;
+	char* Poststring::ip = NULL;
+
+	char Poststring::systemhostname[64] = {};
+	int Poststring::slsystemhostname = 0;
+	char* Poststring::prefixhost = NULL;
+	char* Poststring::host = NULL;
+
+	char Poststring::systemvlan[32] = {};
+	int Poststring::slsystemvlan = 0;
+	char* Poststring::prefixvlan = NULL;
+	char* Poststring::vlan = NULL;
+
+	char Poststring::systemswitchport[32];
+	int Poststring::slsystemswitchport = 0;
+	char* Poststring::prefixswPort = NULL;
+	char* Poststring::swPort = NULL;
+
+	char Poststring::systemswName[32];
+	int Poststring::slsystemswName = 0;
+	char* Poststring::prefixswName = NULL;
+	char* Poststring::swName = NULL;
+
+	char Poststring::systemmac[18] = {};
+	int Poststring::slsystemmac = 0;
+	char* Poststring::prefixmac = NULL;
+	char* Poststring::mac = NULL;
+
+	char Poststring::systemswIP[64] = {};
+	int Poststring::slsystemswIP = 0;
+	char* Poststring::prefixswIP = NULL;
+	char* Poststring::swIP = NULL;
+
+	char Poststring::systemswMAC[32] = {};
+	int Poststring::slsystemswMAC = 0;
+	char* Poststring::prefixswMAC = NULL;
+	char* Poststring::swMAC = NULL;
+
+	char Poststring::systemsourceproto[5] = {};
+	int Poststring::slsystemsourceproto = 0;
+	char* Poststring::prefixsourceproto = NULL;
+	char* Poststring::sourceproto = NULL;
+
+	char* Poststring::url = NULL;

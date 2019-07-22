@@ -1,10 +1,55 @@
 #pragma once
+#include "stdafx.h"
 #include "dissectors.h"
 
-class Dissectors {
-	static int GetDataCDP(const u_char* packetData, int dataLength) {};
-	static int GetDataLLDP(const u_char* packetData, int dataLength)
-	{
+
+Dissectors::IndexValue Dissectors::lldp_tlv_type[10] =
+{
+	{ LLDP_END, "End of LLDPDU" },
+	{ LLDP_CHASSIS_ID, "Chassis ID" },
+	{ LLDP_PORT_ID, "Port ID" },
+	{ LLDP_TTL, "Time To Live" },
+	{ LLDP_PORT_DESC, "Port Description" },
+	{ LLDP_SYSTEM_NAME, "System Name" },
+	{ LLDP_SYSTEM_DESC, "System Description" },
+	{ LLDP_SYSTEM_CAP, "System Capabilities" },
+	{ LLDP_MGMT_ADDR, "Management Address" },
+	{ LLDP_ORG_SPEC, "Organisation-specific LLDP" },
+};
+
+Dissectors::IndexValue Dissectors::cdp_tlv_type[22] =
+{
+	{ 0x01, "Device-ID" },
+	{ 0x02, "Address" },
+	{ 0x03, "Port-ID" },
+	{ 0x04, "Capability" },
+	{ 0x05, "Version String" },
+	{ 0x06, "Platform" },
+	{ 0x07, "Prefixes" },
+	{ 0x08, "Protocol-Hello Option" },
+	{ 0x09, "VTP Management Domain" },
+	{ 0x0a, "Native VLAN ID" },
+	{ 0x0b, "Duplex" },
+	{ 0x0e, "ATA-186 VoIP VLAN request" },
+	{ 0x0f, "ATA-186 VoIP VLAN assignment" },
+	{ 0x10, "Power Consumption" },
+	{ 0x11, "MTU" },
+	{ 0x12, "AVVID trust bitmap" },
+	{ 0x13, "AVVID untrusted ports CoS" },
+	{ 0x14, "System Name" },
+	{ 0x15, "System Object ID (not decoded)" },
+	{ 0x16, "Management Addresses" },
+	{ 0x17, "Physical Location" },
+	{ 0, NULL }
+};
+
+int Dissectors::GetDataCDP(const u_char* packetData, int dataLength) 
+{
+	return 0;
+};
+
+int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
+{
 
 	unsigned int count = 0;
 
@@ -113,10 +158,10 @@ class Dissectors {
 			}
 			if (subtype == LLDP_CHASSIS_MAC)
 			{
-				sprintf_s(systemswMAC, "%02x:%02x:%02x:%02x:%02x:%02x", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3], packetData[count + 4], packetData[count + 5]);
+				sprintf_s(Poststring::systemswMAC, "%02x:%02x:%02x:%02x:%02x:%02x", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3], packetData[count + 4], packetData[count + 5]);
 				printf("\n\tMAC address:\n\t");
-				printf(systemswMAC);
-				slsystemswMAC = strlen(systemswMAC);
+				printf(Poststring::systemswMAC);
+				Poststring::slsystemswMAC = strlen(Poststring::systemswMAC);
 
 
 				count += 6;
@@ -224,8 +269,8 @@ class Dissectors {
 		{
 			//temp_switchport = packetData + count;
 			//memcpy(&test, temp_switchport, 31);
-			memcpy(&systemswitchport, packetData + count, length);
-			slsystemswitchport = strlen(systemswitchport);
+			memcpy(&Poststring::systemswitchport, packetData + count, length);
+			Poststring::slsystemswitchport = strlen(Poststring::systemswitchport);
 
 			for (UINT16 x = 0; x < length; x++)
 			{
@@ -242,8 +287,8 @@ class Dissectors {
 		*/
 		case LLDP_SYSTEM_NAME:
 		{
-			memcpy(&systemswName, packetData + count, length);
-			slsystemswName = strlen(systemswName);
+			memcpy(&Poststring::systemswName, packetData + count, length);
+			Poststring::slsystemswName = strlen(Poststring::systemswName);
 
 			for (UINT16 x = 0; x < length; x++)
 			{
@@ -360,76 +405,76 @@ class Dissectors {
 
 			switch (subtype)
 			{
-				case LLDP_ADDR_IP4: //IPv4
-				{
-					sprintf_s(systemswIP, "%i.%i.%i.%i", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3]);
-					printf("\n\tIP address: ");
-					printf(systemswIP);
-					slsystemswIP = strlen(systemswIP);
+			case LLDP_ADDR_IP4: //IPv4
+			{
+				sprintf_s(Poststring::systemswIP, "%i.%i.%i.%i", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3]);
+				printf("\n\tIP address: ");
+				printf(Poststring::systemswIP);
+				Poststring::slsystemswIP = strlen(Poststring::systemswIP);
 
-					count += 4;
-					break;
-				}
-				case LLDP_ADDR_IP6:
-				{
-					break;
-				}
-				case LLDP_ADDR_NSAP:
-				{
-					break;
-				}
-				case LLDP_ADDR_HDLC:
-				{
-					break;
-				}
-				case LLDP_ADDR_BBN1822:
-				{
-					break;
-				}
-				case LLDP_ADDR_802:
-				{
-					break;
-				}
-				case LLDP_ADDR_E163:
-				{
-					break;
-				}
-				case LLDP_ADDR_E164:
-				{
-					break;
-				}
-				case LLDP_ADDR_F69:
-				{
-					break;
-				}
-				case LLDP_ADDR_X121:
-				{
-					break;
-				}
-				case LLDP_ADDR_IPX:
-				{
-					break;
-				}
-				case LLDP_ADDR_APPLETALK:
-				{
-					break;
-				}
-				case LLDP_ADDR_DECNET:
-				{
-					break;
-				}
-				case LLDP_ADDR_BANTANVINES:
-				{
-					break;
-				}
-				case LLDP_ADDR_E164_NSAP:
-				{
-					break;
-				}
-				case LLDP_ADDR_DNS:
-				{
-					break;
-				}
+				count += 4;
+				break;
+			}
+			case LLDP_ADDR_IP6:
+			{
+				break;
+			}
+			case LLDP_ADDR_NSAP:
+			{
+				break;
+			}
+			case LLDP_ADDR_HDLC:
+			{
+				break;
+			}
+			case LLDP_ADDR_BBN1822:
+			{
+				break;
+			}
+			case LLDP_ADDR_802:
+			{
+				break;
+			}
+			case LLDP_ADDR_E163:
+			{
+				break;
+			}
+			case LLDP_ADDR_E164:
+			{
+				break;
+			}
+			case LLDP_ADDR_F69:
+			{
+				break;
+			}
+			case LLDP_ADDR_X121:
+			{
+				break;
+			}
+			case LLDP_ADDR_IPX:
+			{
+				break;
+			}
+			case LLDP_ADDR_APPLETALK:
+			{
+				break;
+			}
+			case LLDP_ADDR_DECNET:
+			{
+				break;
+			}
+			case LLDP_ADDR_BANTANVINES:
+			{
+				break;
+			}
+			case LLDP_ADDR_E164_NSAP:
+			{
+				break;
+			}
+			case LLDP_ADDR_DNS:
+			{
+				break;
+			}
 			}
 
 
@@ -479,111 +524,15 @@ class Dissectors {
 
 			switch (oui_id)
 			{
-				case 0x0012bb:
+			case 0x0012bb:
+			{
+				switch (subtype)
 				{
-					switch (subtype)
-					{
-					case 0x05:
-					{
-						memcpy(&systemswMAC, packetData + count, length);
-						slsystemswMAC = strlen(systemswMAC);
-						count += length;
-						break;
-					}
-					default:
-					{
-						for (UINT16 x = 0; x < length; x++)
-						{
-							value[x] = packetData[count];
-							count++;
-						}
-						break;
-					}
-					}
-					break;
-				}
-				case 0x0080c2:
+				case 0x05:
 				{
-					printf("\n\tIEEE 802.1 - ");
-					switch (subtype)
-					{
-					case 1:
-					{
-						int port_vlan = (packetData[count] << 8 | packetData[count + 1]);
-						//printf("VLAN ID: %i", port_vlan);
-						_itoa_s(port_vlan, systemvlan, 10);
-						slsystemvlan = strlen(systemvlan);
-						count += 2;
-						break;
-					}
-					case 2:
-					{
-						//	printf("VLAN ID: %i", (packetData[count] << 8 | packetData[count + 1]));
-						count += 2;
-						break;
-					}
-					default:
-					{
-						break;
-					}
-					}
-
-					break;
-				}
-				case 0x00120f:
-				{
-					//802.1AB-2009
-					//Annex F for the layout
-
-					printf("\n\t\t IEEE 802.3 - ");
-
-
-					switch (subtype)
-					{
-					case 1:
-					{
-						//F2.x
-						printf("MAC/PHY Configuration/Status: ");
-
-						//Octet 1 - bits 0 and 1 are the only ones important. This should never be greater than "3"
-						printf("\n\t\t Auto-negotiation support: %i", (packetData[count] & 0x01)); //0xfe
-						printf("\n\t\t Auto-negotiation status: %i", (packetData[count] & 0x02)); //0xfd
-						count += 1;
-
-						//Octet 2 and 3 - all bits are a value.
-
-						printf("\n\t\t PMD auto-negotiation advertised capabilities: %i", (packetData[count] << 8 | packetData[count + 1]));
-						count += 2;
-
-
-						//Octet 4 and 5
-						printf("\n\t\t Operational MAU type:%x", (packetData[count] << 8 | packetData[count + 1]));
-						count += 2;
-						break;
-					}
-					case 2:
-					{
-						printf("Power Via Medium Dependent Interface (MDI): %i", (packetData[count] << 8 | packetData[count + 1]));
-						count += 2;
-						break;
-					}
-					case 3:
-					{
-						printf("Link Aggregation (deprecated): %i", (packetData[count] << 8 | packetData[count + 1]));
-						count += 2;
-						break;
-					}
-					case 4:
-					{
-						printf("Maximum Frame Size: %i", (packetData[count] << 8 | packetData[count + 1]));
-						count += 2;
-						break;
-					}
-					default:
-					{
-						break;
-					}
-					}
+					memcpy(&Poststring::systemswMAC, packetData + count, length);
+					Poststring::slsystemswMAC = strlen(Poststring::systemswMAC);
+					count += length;
 					break;
 				}
 				default:
@@ -593,9 +542,105 @@ class Dissectors {
 						value[x] = packetData[count];
 						count++;
 					}
-					printf("\n\t%s", value);//, count - length);
 					break;
 				}
+				}
+				break;
+			}
+			case 0x0080c2:
+			{
+				printf("\n\tIEEE 802.1 - ");
+				switch (subtype)
+				{
+				case 1:
+				{
+					int port_vlan = (packetData[count] << 8 | packetData[count + 1]);
+					//printf("VLAN ID: %i", port_vlan);
+					_itoa_s(port_vlan, Poststring::systemvlan, 10);
+					Poststring::slsystemvlan = strlen(Poststring::systemvlan);
+					count += 2;
+					break;
+				}
+				case 2:
+				{
+					//	printf("VLAN ID: %i", (packetData[count] << 8 | packetData[count + 1]));
+					count += 2;
+					break;
+				}
+				default:
+				{
+					break;
+				}
+				}
+
+				break;
+			}
+			case 0x00120f:
+			{
+				//802.1AB-2009
+				//Annex F for the layout
+
+				printf("\n\t\t IEEE 802.3 - ");
+
+
+				switch (subtype)
+				{
+				case 1:
+				{
+					//F2.x
+					printf("MAC/PHY Configuration/Status: ");
+
+					//Octet 1 - bits 0 and 1 are the only ones important. This should never be greater than "3"
+					printf("\n\t\t Auto-negotiation support: %i", (packetData[count] & 0x01)); //0xfe
+					printf("\n\t\t Auto-negotiation status: %i", (packetData[count] & 0x02)); //0xfd
+					count += 1;
+
+					//Octet 2 and 3 - all bits are a value.
+
+					printf("\n\t\t PMD auto-negotiation advertised capabilities: %i", (packetData[count] << 8 | packetData[count + 1]));
+					count += 2;
+
+
+					//Octet 4 and 5
+					printf("\n\t\t Operational MAU type:%x", (packetData[count] << 8 | packetData[count + 1]));
+					count += 2;
+					break;
+				}
+				case 2:
+				{
+					printf("Power Via Medium Dependent Interface (MDI): %i", (packetData[count] << 8 | packetData[count + 1]));
+					count += 2;
+					break;
+				}
+				case 3:
+				{
+					printf("Link Aggregation (deprecated): %i", (packetData[count] << 8 | packetData[count + 1]));
+					count += 2;
+					break;
+				}
+				case 4:
+				{
+					printf("Maximum Frame Size: %i", (packetData[count] << 8 | packetData[count + 1]));
+					count += 2;
+					break;
+				}
+				default:
+				{
+					break;
+				}
+				}
+				break;
+			}
+			default:
+			{
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("\n\t%s", value);//, count - length);
+				break;
+			}
 			}
 			break;
 		}
@@ -614,4 +659,5 @@ class Dissectors {
 		}
 		}
 	}
+	return 0;
 }
