@@ -1,26 +1,24 @@
-// stdafx.h : include file for standard system include files,
-// or project specific include files that are used frequently, but
-// are changed infrequently
-//
-
 #pragma once
 
 //#include "targetver.h"
 
 #include <stdio.h>
 #include <tchar.h>
-
 #include "tlvcdp.h"
 #include "tlvlldp.h"
+#include "dissectors.h"
+#include "Poststring.h"
 
 #ifdef WIN32
+typedef unsigned char BYTE;
+typedef unsigned char u_char;
 //#include <winsock.h>
 #pragma comment(lib, "Ws2_32.lib")
 #endif
 #ifdef __linux__
 #include <sys/socket.h>
 #endif
-
+#pragma once
 // include this BEFORE pcap.h
 // This will then use remote-ext.h
 // https://www.winpcap.org/pipermail/winpcap-users/2008-June/002576.html
@@ -47,15 +45,6 @@
 //#define true 1
 //#define false 0
 #endif
-
-
-
-
-
-
-
-
-
 
 // To read
 
@@ -99,15 +88,11 @@ http://www.codeguru.com/cpp/i-n/network/networkinformation/article.php/c5451/Thr
 
 //#include <ntddndis.h> //fir gettubg tge nac address
 
-
-
 //CURL library
 //Need this to be static, ideally
 #define CURL_STATICLIB
 #include "curl/curl.h"
 #pragma comment ( lib, "libcurl.lib" )
-
-
 
 //#define _USE_IP_AND_MASK 
 //For now just use the first octet to determine if its the network address. 
@@ -116,10 +101,6 @@ http://www.codeguru.com/cpp/i-n/network/networkinformation/article.php/c5451/Thr
 #define CORPORATE_ADDRESS	"10.1.0.0";
 #define CORPORATE_MASK		"255.255.255.0";
 #endif
-
-
-
-
 
 // Receiving and Displaying an answer from the Web Server
 //char buffer[10000];
@@ -163,5 +144,3 @@ http://www.codeguru.com/cpp/i-n/network/networkinformation/article.php/c5451/Thr
 
 			curl_global_cleanup();
 */
-
-
