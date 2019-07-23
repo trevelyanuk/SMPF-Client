@@ -42,7 +42,7 @@ Dissectors::IndexValue Dissectors::cdp_tlv_type[22] =
 	{ 0, NULL }
 };
 
-int Dissectors::GetDataCDP(const u_char* packetData, int dataLength) 
+int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 {
 	printf("\n\tDestination MAC address:\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[0], packetData[1], packetData[2], packetData[3], packetData[4], packetData[5]);
 	printf("\n\tSource MAC address:\t\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[6], packetData[7], packetData[8], packetData[9], packetData[10], packetData[11]);
@@ -61,22 +61,23 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 		//length = length & mask;
 		count += 4;
 		length -= 4;
-		
+
 		printf("\n\t%s", cdp_tlv_type[type].value);
+
+		for (UINT16 x = 0; x < length; x++)
+		{
+			value[x] = packetData[count];
+			count++;
+		}
+		printf("%s", value);//, count - length);
+		break;
+
 		switch (type)
 		{
 			case 0x01: //Device ID
 			{
 				memcpy(&Poststring::systemswName, packetData + count, length);
 				Poststring::slsystemswName = strlen(Poststring::systemswName);
-
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x02: //Address
 			{
@@ -122,65 +123,23 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 			}
 			case 0x04: //Capabilities
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x05: //Version string, can be quite long
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x06: //Platform
 			{
 				memcpy(&Poststring::systemswMAC, packetData + count, length);
 				Poststring::slsystemswMAC = strlen(Poststring::systemswMAC);
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x07: //Prefixes
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x08: //Protocol-hello option
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x09: //VTP Management domain
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x0a: //Native VLAN ID
 			{
@@ -197,212 +156,66 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 			}
 			case 0x0b: //Duplex
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x0c:
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x0d:
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x0e: //ATA - 186 VoIP VLAN request
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x0f: //ATA-186 VoIP VLAN assignment
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x10: //Power Consumption
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x11: //MTU
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x12: //AVVID Trust bitmap
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x13: //AVVID Untrusted Ports CoS
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x14: //System Name
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x15: //System Object ID?
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x16: //Management Address
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x17: //Location - physical location?
-			{	
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
+			{
 			}
 			case 0x18: //Unknown
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x19:
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x1a: //Power available
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x1b:
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x1c:
-			{for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
+			{
 			}
 			case 0x1d: //Energywise
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x1e:
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			case 0x1f: //Spare POE
 			{
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
-				printf("%s", value);//, count - length);
-				break;
 			}
 			default:
 			{
