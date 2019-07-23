@@ -45,8 +45,440 @@ Dissectors::IndexValue Dissectors::cdp_tlv_type[22] =
 
 int Dissectors::GetDataCDP(const u_char* packetData, int dataLength) 
 {
-	return 0;
-};
+		//http://www.cisco.com/c/en/us/td/docs/ios-xml/ios/cdp/configuration/15-mt/cdp-15-mt-book/nm-cdp-discover.html
+
+		printf("\n\tDestination MAC address:\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[0], packetData[1], packetData[2], packetData[3], packetData[4], packetData[5]);
+		printf("\n\tSource MAC address:\t\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[6], packetData[7], packetData[8], packetData[9], packetData[10], packetData[11]);
+		printf("\n\tLength:\t\t %i", (packetData[12] << 8 | packetData[13]));
+		printf("\n\tCisco Discovery Protcol version %i\n\t TTL:%i", packetData[22], packetData[23]);
+
+		unsigned int count = 26;
+
+		for (count; count < packetHeader->len; )
+		{
+			unsigned int type = (packetData[count] << 8 | packetData[count + 1]);
+			unsigned int length = (packetData[count + 2] << 8 | packetData[count + 3]); //length of the TLV - that includes the type and length itself!
+																						//length = length & mask;
+			count += 4;
+			length -= 4;
+
+			unsigned char value[512] = "";
+
+			switch (type)
+			{
+			case 0x01:
+			{
+				printf("\n\n\tDevice ID: ");
+
+				memcpy(&systemswName, packetData + count, length);
+				slsystemswName = strlen(systemswName);
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x02:
+			{
+				printf("\n\n\tAddress: ");
+
+				//Number of addresses
+				long numberOfAddresses = (packetData[count] << 24 | packetData[count] << 16 | packetData[count + 2] << 8 | packetData[count + 3]);
+				count += 4;
+				length -= 4;
+				for (UINT16 x = 0; x < numberOfAddresses; x++)
+				{
+					//Protocol type
+					//Protocol length
+					count += 2;
+
+					//This is an IP address
+					if (packetData[count] == 0xcc)
+					{
+						printf("IP Address: ");
+						count++;
+
+						//This is how long it is
+						int addressLength = (packetData[count] << 8 | packetData[count + 1]);
+						count += 2;
+
+
+						sprintf_s(systemswIP, "%i.%i.%i.%i", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3]);
+						printf(systemswIP);
+						slsystemswIP = strlen(systemswIP);
+						count += addressLength;
+					}
+
+				}
+
+				break;
+			}
+			case 0x03:
+			{
+				printf("\n\n\tPort-ID: ");
+
+				memcpy(&systemswitchport, packetData + count, length);
+				slsystemswitchport = strlen(systemswitchport);
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				break;
+			}
+			case 0x04:
+			{
+				printf("\n\n\tCapability: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x05:
+			{
+				printf("\n\n\tVersion String: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x06:
+			{
+				printf("\n\n\tPlatform: ");
+
+				memcpy(&systemswMAC, packetData + count, length);
+				slsystemswMAC = strlen(systemswMAC);
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x07:
+			{
+				printf("\n\n\tPrefixes: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x08:
+			{
+				printf("\n\n\tProtocol-Hello option: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x09:
+			{
+				printf("\n\n\tVTP Management Domain: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x0a:
+			{
+
+				printf("\n\n\tNative VLAN ID: ");
+				int port_vlan = (packetData[count] << 8 | packetData[count + 1]);
+
+				//printf("VLAN ID: %i", port_vlan);
+				_itoa_s(port_vlan, systemvlan, 10);
+				slsystemvlan = strlen(systemvlan);
+
+				count += 2;
+
+				printf("%i", port_vlan);
+				break;
+			}
+			case 0x0b:
+			{
+				printf("\n\n\tDuplex: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x0c:
+			{
+				printf("\n\n\tDONT KNOW LOL");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x0d:
+			{
+				printf("\n\n\tDONT KNOW LOL");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x0e:
+			{
+				printf("\n\n\tATA-186 VoIP VLAN request: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x0f:
+			{
+				printf("\n\n\tATA-186 VoIP VLAN assignment: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x10:
+			{
+				printf("\n\n\tPower Consumption: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x11:
+			{
+				printf("\n\n\tMTU: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x12:
+			{
+				printf("\n\n\tAVVID Trust Bitmap: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x13:
+			{
+				printf("\n\n\tAVVID Untrusted Ports CoS: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x14:
+			{
+				printf("\n\n\tSystem Name: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x15:
+			{
+				printf("\n\n\tSystem Object ID (Not Decoded): ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x16:
+			{
+				printf("\n\n\tManagement Addresses: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x17:
+			{
+				printf("\n\n\tPhysical Location: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x18:
+			{
+				printf("\n\n\tUNKNOWN: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x19:
+			{
+				printf("\n\n\tUNKNOWN: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x1a:
+			{
+				printf("\n\n\tPower Available: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x1b:
+			{
+				printf("\n\n\tUNKNOWN: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x1c:
+			{
+				printf("\n\n\tUNKNOWN: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x1d:
+			{
+				printf("\n\n\tEnergyWise: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x1e:
+			{
+				printf("\n\n\tUNKNOWN: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			case 0x1f:
+			{
+				printf("\n\n\tSpare PoE: ");
+
+				for (UINT16 x = 0; x < length; x++)
+				{
+					value[x] = packetData[count];
+					count++;
+				}
+				printf("%s", value);//, count - length);
+				break;
+			}
+			default:
+			{
+				printf("\n\n\t *** Unknown *** value = %s", value);
+				break;
+			}
+		}
+	}
+}
 
 int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 {
