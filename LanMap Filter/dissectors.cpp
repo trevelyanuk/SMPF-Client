@@ -47,7 +47,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 	printf("\n\tDestination MAC address:\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[0], packetData[1], packetData[2], packetData[3], packetData[4], packetData[5]);
 	printf("\n\tSource MAC address:\t\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[6], packetData[7], packetData[8], packetData[9], packetData[10], packetData[11]);
 	printf("\n\tLength:\t\t %i", (packetData[12] << 8 | packetData[13]));
-	printf("\n\tCisco Discovery Protcol version %i\n\t TTL:%i", packetData[22], packetData[23]);
+	printf("\n\tCisco Discovery Protcol version %i", packetData[22]);
+	//printf("\n\tTTL:%i", packetData[23]);
 
 	unsigned int count = 26;
 
@@ -60,13 +61,12 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 		//length = length & mask;
 		count += 4;
 		length -= 4;
-
+		
+		printf("\n\t%s", cdp_tlv_type[type].value);
 		switch (type)
 		{
-			case 0x01:
+			case 0x01: //Device ID
 			{
-				printf("\n\n\tDevice ID: ");
-
 				memcpy(&Poststring::systemswName, packetData + count, length);
 				Poststring::slsystemswName = strlen(Poststring::systemswName);
 
@@ -78,11 +78,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x02:
+			case 0x02: //Address
 			{
-				printf("\n\n\tAddress: ");
-
-				//Number of addresses
 				long numberOfAddresses = (packetData[count] << 24 | packetData[count] << 16 | packetData[count + 2] << 8 | packetData[count + 3]);
 				count += 4;
 				length -= 4;
@@ -108,15 +105,11 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 						Poststring::slsystemswIP = strlen(Poststring::systemswIP);
 						count += addressLength;
 					}
-
 				}
-
 				break;
 			}
-			case 0x03:
+			case 0x03: //Port ID
 			{
-				printf("\n\n\tPort-ID: ");
-
 				memcpy(&Poststring::systemswitchport, packetData + count, length);
 				Poststring::slsystemswitchport = strlen(Poststring::systemswitchport);
 
@@ -127,10 +120,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				}
 				break;
 			}
-			case 0x04:
+			case 0x04: //Capabilities
 			{
-				printf("\n\n\tCapability: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -139,10 +130,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x05:
+			case 0x05: //Version string, can be quite long
 			{
-				printf("\n\n\tVersion String: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -151,10 +140,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x06:
+			case 0x06: //Platform
 			{
-				printf("\n\n\tPlatform: ");
-
 				memcpy(&Poststring::systemswMAC, packetData + count, length);
 				Poststring::slsystemswMAC = strlen(Poststring::systemswMAC);
 				for (UINT16 x = 0; x < length; x++)
@@ -165,10 +152,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x07:
+			case 0x07: //Prefixes
 			{
-				printf("\n\n\tPrefixes: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -177,10 +162,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x08:
+			case 0x08: //Protocol-hello option
 			{
-				printf("\n\n\tProtocol-Hello option: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -189,10 +172,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x09:
+			case 0x09: //VTP Management domain
 			{
-				printf("\n\n\tVTP Management Domain: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -201,10 +182,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x0a:
+			case 0x0a: //Native VLAN ID
 			{
-
-				printf("\n\n\tNative VLAN ID: ");
 				int port_vlan = (packetData[count] << 8 | packetData[count + 1]);
 
 				//printf("VLAN ID: %i", port_vlan);
@@ -216,10 +195,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%i", port_vlan);
 				break;
 			}
-			case 0x0b:
+			case 0x0b: //Duplex
 			{
-				printf("\n\n\tDuplex: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -230,8 +207,6 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 			}
 			case 0x0c:
 			{
-				printf("\n\n\tDONT KNOW LOL");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -242,8 +217,6 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 			}
 			case 0x0d:
 			{
-				printf("\n\n\tDONT KNOW LOL");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -252,10 +225,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x0e:
+			case 0x0e: //ATA - 186 VoIP VLAN request
 			{
-				printf("\n\n\tATA-186 VoIP VLAN request: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -264,10 +235,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x0f:
+			case 0x0f: //ATA-186 VoIP VLAN assignment
 			{
-				printf("\n\n\tATA-186 VoIP VLAN assignment: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -276,10 +245,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x10:
+			case 0x10: //Power Consumption
 			{
-				printf("\n\n\tPower Consumption: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -288,10 +255,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x11:
+			case 0x11: //MTU
 			{
-				printf("\n\n\tMTU: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -300,10 +265,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x12:
+			case 0x12: //AVVID Trust bitmap
 			{
-				printf("\n\n\tAVVID Trust Bitmap: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -312,10 +275,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x13:
+			case 0x13: //AVVID Untrusted Ports CoS
 			{
-				printf("\n\n\tAVVID Untrusted Ports CoS: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -324,10 +285,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x14:
+			case 0x14: //System Name
 			{
-				printf("\n\n\tSystem Name: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -336,10 +295,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x15:
+			case 0x15: //System Object ID?
 			{
-				printf("\n\n\tSystem Object ID (Not Decoded): ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -348,10 +305,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x16:
+			case 0x16: //Management Address
 			{
-				printf("\n\n\tManagement Addresses: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -360,10 +315,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x17:
-			{
-				printf("\n\n\tPhysical Location: ");
-
+			case 0x17: //Location - physical location?
+			{	
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -372,10 +325,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x18:
+			case 0x18: //Unknown
 			{
-				printf("\n\n\tUNKNOWN: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -386,8 +337,6 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 			}
 			case 0x19:
 			{
-				printf("\n\n\tUNKNOWN: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -396,10 +345,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x1a:
+			case 0x1a: //Power available
 			{
-				printf("\n\n\tPower Available: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -410,8 +357,6 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 			}
 			case 0x1b:
 			{
-				printf("\n\n\tUNKNOWN: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -421,10 +366,7 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				break;
 			}
 			case 0x1c:
-			{
-				printf("\n\n\tUNKNOWN: ");
-
-				for (UINT16 x = 0; x < length; x++)
+			{for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
 					count++;
@@ -432,10 +374,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x1d:
+			case 0x1d: //Energywise
 			{
-				printf("\n\n\tEnergyWise: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -446,8 +386,6 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 			}
 			case 0x1e:
 			{
-				printf("\n\n\tUNKNOWN: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -456,10 +394,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				printf("%s", value);//, count - length);
 				break;
 			}
-			case 0x1f:
+			case 0x1f: //Spare POE
 			{
-				printf("\n\n\tSpare PoE: ");
-
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -475,6 +411,7 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 			}
 		}
 	}
+	return 0;
 }
 
 int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
