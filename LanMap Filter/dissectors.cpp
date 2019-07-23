@@ -2,7 +2,6 @@
 #include "stdafx.h"
 #include "dissectors.h"
 
-
 Dissectors::IndexValue Dissectors::lldp_tlv_type[10] =
 {
 	{ LLDP_END, "End of LLDPDU" },
@@ -45,33 +44,31 @@ Dissectors::IndexValue Dissectors::cdp_tlv_type[22] =
 
 int Dissectors::GetDataCDP(const u_char* packetData, int dataLength) 
 {
-		//http://www.cisco.com/c/en/us/td/docs/ios-xml/ios/cdp/configuration/15-mt/cdp-15-mt-book/nm-cdp-discover.html
+	printf("\n\tDestination MAC address:\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[0], packetData[1], packetData[2], packetData[3], packetData[4], packetData[5]);
+	printf("\n\tSource MAC address:\t\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[6], packetData[7], packetData[8], packetData[9], packetData[10], packetData[11]);
+	printf("\n\tLength:\t\t %i", (packetData[12] << 8 | packetData[13]));
+	printf("\n\tCisco Discovery Protcol version %i\n\t TTL:%i", packetData[22], packetData[23]);
 
-		printf("\n\tDestination MAC address:\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[0], packetData[1], packetData[2], packetData[3], packetData[4], packetData[5]);
-		printf("\n\tSource MAC address:\t\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[6], packetData[7], packetData[8], packetData[9], packetData[10], packetData[11]);
-		printf("\n\tLength:\t\t %i", (packetData[12] << 8 | packetData[13]));
-		printf("\n\tCisco Discovery Protcol version %i\n\t TTL:%i", packetData[22], packetData[23]);
+	unsigned int count = 26;
 
-		unsigned int count = 26;
+	//Iterate through each TLV
+	for (count; count < dataLength; )
+	{
+		unsigned int type = (packetData[count] << 8 | packetData[count + 1]);
+		unsigned int length = (packetData[count + 2] << 8 | packetData[count + 3]); //length of the TLV - includes the type and length bytes themselves
+		unsigned char value[512] = "";
+		//length = length & mask;
+		count += 4;
+		length -= 4;
 
-		for (count; count < packetHeader->len; )
+		switch (type)
 		{
-			unsigned int type = (packetData[count] << 8 | packetData[count + 1]);
-			unsigned int length = (packetData[count + 2] << 8 | packetData[count + 3]); //length of the TLV - that includes the type and length itself!
-																						//length = length & mask;
-			count += 4;
-			length -= 4;
-
-			unsigned char value[512] = "";
-
-			switch (type)
-			{
 			case 0x01:
 			{
 				printf("\n\n\tDevice ID: ");
 
-				memcpy(&systemswName, packetData + count, length);
-				slsystemswName = strlen(systemswName);
+				memcpy(&Poststring::systemswName, packetData + count, length);
+				Poststring::slsystemswName = strlen(Poststring::systemswName);
 
 				for (UINT16 x = 0; x < length; x++)
 				{
@@ -106,9 +103,9 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 						count += 2;
 
 
-						sprintf_s(systemswIP, "%i.%i.%i.%i", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3]);
-						printf(systemswIP);
-						slsystemswIP = strlen(systemswIP);
+						sprintf_s(Poststring::systemswIP, "%i.%i.%i.%i", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3]);
+						printf(Poststring::systemswIP);
+						Poststring::slsystemswIP = strlen(Poststring::systemswIP);
 						count += addressLength;
 					}
 
@@ -120,8 +117,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 			{
 				printf("\n\n\tPort-ID: ");
 
-				memcpy(&systemswitchport, packetData + count, length);
-				slsystemswitchport = strlen(systemswitchport);
+				memcpy(&Poststring::systemswitchport, packetData + count, length);
+				Poststring::slsystemswitchport = strlen(Poststring::systemswitchport);
 
 				for (UINT16 x = 0; x < length; x++)
 				{
@@ -158,8 +155,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 			{
 				printf("\n\n\tPlatform: ");
 
-				memcpy(&systemswMAC, packetData + count, length);
-				slsystemswMAC = strlen(systemswMAC);
+				memcpy(&Poststring::systemswMAC, packetData + count, length);
+				Poststring::slsystemswMAC = strlen(Poststring::systemswMAC);
 				for (UINT16 x = 0; x < length; x++)
 				{
 					value[x] = packetData[count];
@@ -211,8 +208,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				int port_vlan = (packetData[count] << 8 | packetData[count + 1]);
 
 				//printf("VLAN ID: %i", port_vlan);
-				_itoa_s(port_vlan, systemvlan, 10);
-				slsystemvlan = strlen(systemvlan);
+				_itoa_s(port_vlan, Poststring::systemvlan, 10);
+				Poststring::slsystemvlan = strlen(Poststring::systemvlan);
 
 				count += 2;
 
