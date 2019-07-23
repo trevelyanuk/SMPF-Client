@@ -1,6 +1,3 @@
-// LanMap Filter
-// http://www.codeproject.com/Articles/30234/Introduction-to-the-WinPcap-Networking-Libraries
-
 #include "stdafx.h"
 // Functions we will use
 typedef unsigned char BYTE;

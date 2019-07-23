@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26228.12
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29102.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LanMap Filter", "LanMap Filter\LanMap Filter.vcxproj", "{D3DF6974-1469-431A-8182-B949748AC295}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SMPF-Win", "LanMap Filter\LanMap Filter.vcxproj", "{D3DF6974-1469-431A-8182-B949748AC295}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SMPF-Client-Linux", "SMPF-Client-Linux\SMPF-Client-Linux.vcxproj", "{735A9580-1AC1-4939-8079-1F42386BA0A7}"
 EndProject
@@ -56,5 +56,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6D04CC6D-DEFC-49BB-AB7A-6634CB115D6B}
 	EndGlobalSection
 EndGlobal

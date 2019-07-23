@@ -38,13 +38,13 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LanMap Filter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="dissectors.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Poststring.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LanMap Filter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
