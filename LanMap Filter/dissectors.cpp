@@ -46,8 +46,8 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 {
 	printf("\n\tDestination MAC address:\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[0], packetData[1], packetData[2], packetData[3], packetData[4], packetData[5]);
 	printf("\n\tSource MAC address:\t\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[6], packetData[7], packetData[8], packetData[9], packetData[10], packetData[11]);
-	printf("\n\tLength:\t\t %i", (packetData[12] << 8 | packetData[13]));
-	printf("\n\tCisco Discovery Protcol version %i", packetData[22]);
+	printf("\n\tLength:\t\t\t\t %i", (packetData[12] << 8 | packetData[13]));
+	printf("\n\tCisco Discovery Protocol Version %i", packetData[22]);
 	//printf("\n\tTTL:%i", packetData[23]);
 
 	unsigned int count = 26;
@@ -62,161 +62,95 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 		count += 4;
 		length -= 4;
 
-		printf("\n\t%s", cdp_tlv_type[type].value);
-
 		for (UINT16 x = 0; x < length; x++)
 		{
 			value[x] = packetData[count];
 			count++;
 		}
-		printf("%s", value);//, count - length);
-		break;
+
+		printf("\n\t%s: %s", cdp_tlv_type[type].value, value);
 
 		switch (type)
 		{
 			case 0x01: //Device ID
 			{
-				memcpy(&Poststring::systemswName, packetData + count, length);
+				memcpy(&Poststring::systemswName, packetData + count-length, length);
 				Poststring::slsystemswName = strlen(Poststring::systemswName);
+				break;
 			}
 			case 0x02: //Address
 			{
-				long numberOfAddresses = (packetData[count] << 24 | packetData[count] << 16 | packetData[count + 2] << 8 | packetData[count + 3]);
-				count += 4;
-				length -= 4;
-				for (UINT16 x = 0; x < numberOfAddresses; x++)
+				long numberOfAddresses = (value[0] << 24 | value[1] << 16 | value[2] << 8 | value[3]);
+				int tempCount = 4;
+				for (UINT16 addressIndex = 0; addressIndex < numberOfAddresses; addressIndex++)
 				{
-					//Protocol type
-					//Protocol length
-					count += 2;
+					//Protocol type and length
+					tempCount += 2;
 
 					//This is an IP address
-					if (packetData[count] == 0xcc)
+					if (value[tempCount] == 0xcc)
 					{
 						printf("IP Address: ");
-						count++;
+						tempCount++;
 
 						//This is how long it is
-						int addressLength = (packetData[count] << 8 | packetData[count + 1]);
-						count += 2;
+						int addressLength = (value[tempCount] << 8 | value[tempCount + 1]);
+						tempCount += 2;
 
-
-						sprintf_s(Poststring::systemswIP, "%i.%i.%i.%i", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3]);
+						sprintf_s(Poststring::systemswIP, "%i.%i.%i.%i", value[tempCount], value[tempCount + 1], value[tempCount + 2], value[tempCount + 3]);
 						printf(Poststring::systemswIP);
 						Poststring::slsystemswIP = strlen(Poststring::systemswIP);
-						count += addressLength;
+						tempCount += addressLength;
 					}
 				}
 				break;
 			}
 			case 0x03: //Port ID
 			{
-				memcpy(&Poststring::systemswitchport, packetData + count, length);
+				memcpy(&Poststring::systemswitchport, value, length);
 				Poststring::slsystemswitchport = strlen(Poststring::systemswitchport);
-
-				for (UINT16 x = 0; x < length; x++)
-				{
-					value[x] = packetData[count];
-					count++;
-				}
 				break;
 			}
-			case 0x04: //Capabilities
+			case 0x04: break; //Capabilities
+			case 0x05: break; //Version string, can be quite long 
+			case 0x06: break; //Platform
 			{
-			}
-			case 0x05: //Version string, can be quite long
-			{
-			}
-			case 0x06: //Platform
-			{
-				memcpy(&Poststring::systemswMAC, packetData + count, length);
+				memcpy(&Poststring::systemswMAC, value, length);
 				Poststring::slsystemswMAC = strlen(Poststring::systemswMAC);
+				break;
 			}
-			case 0x07: //Prefixes
+			case 0x07: break; //Prefixes
+			case 0x08: break; //Protocol-hello option
+			case 0x09: break; //VTP Management domain
+			case 0x0a: break; //Native VLAN ID
 			{
-			}
-			case 0x08: //Protocol-hello option
-			{
-			}
-			case 0x09: //VTP Management domain
-			{
-			}
-			case 0x0a: //Native VLAN ID
-			{
-				int port_vlan = (packetData[count] << 8 | packetData[count + 1]);
-
-				//printf("VLAN ID: %i", port_vlan);
+				int port_vlan = (value[0] << 8 | value[1]);
 				_itoa_s(port_vlan, Poststring::systemvlan, 10);
 				Poststring::slsystemvlan = strlen(Poststring::systemvlan);
-
 				count += 2;
-
-				printf("%i", port_vlan);
 				break;
 			}
-			case 0x0b: //Duplex
-			{
-			}
-			case 0x0c:
-			{
-			}
-			case 0x0d:
-			{
-			}
-			case 0x0e: //ATA - 186 VoIP VLAN request
-			{
-			}
-			case 0x0f: //ATA-186 VoIP VLAN assignment
-			{
-			}
-			case 0x10: //Power Consumption
-			{
-			}
-			case 0x11: //MTU
-			{
-			}
-			case 0x12: //AVVID Trust bitmap
-			{
-			}
-			case 0x13: //AVVID Untrusted Ports CoS
-			{
-			}
-			case 0x14: //System Name
-			{
-			}
-			case 0x15: //System Object ID?
-			{
-			}
-			case 0x16: //Management Address
-			{
-			}
-			case 0x17: //Location - physical location?
-			{
-			}
-			case 0x18: //Unknown
-			{
-			}
-			case 0x19:
-			{
-			}
-			case 0x1a: //Power available
-			{
-			}
-			case 0x1b:
-			{
-			}
-			case 0x1c:
-			{
-			}
-			case 0x1d: //Energywise
-			{
-			}
-			case 0x1e:
-			{
-			}
-			case 0x1f: //Spare POE
-			{
-			}
+			case 0x0b: break; //Duplex
+			case 0x0c: break;
+			case 0x0d: break;
+			case 0x0e: break; //ATA - 186 VoIP VLAN request
+			case 0x0f: break; //ATA-186 VoIP VLAN assignment
+			case 0x10: break; //Power Consumption
+			case 0x11: break; //MTU
+			case 0x12: break; //AVVID Trust bitmap
+			case 0x13: break; //AVVID Untrusted Ports CoS
+			case 0x14: break; //System Name
+			case 0x15: break; //System Object ID?
+			case 0x16: break; //Management Address
+			case 0x17: break; //Location - physical location?
+			case 0x18: break; //Unknown
+			case 0x19: break;
+			case 0x1a: break; //Power available
+			case 0x1b: break;
+			case 0x1c: break;
+			case 0x1d: break; //Energywise
+			case 0x1e: break;
+			case 0x1f: break; //Spare POE
 			default:
 			{
 				printf("\n\n\t *** Unknown *** value = %s", value);
