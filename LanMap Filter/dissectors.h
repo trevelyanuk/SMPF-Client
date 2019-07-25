@@ -21,5 +21,5 @@ class Dissectors {
 		static int GetDataLLDP(const u_char* packetData, int dataLength);
 
 		static IndexValue lldp_tlv_type[10];
-		static IndexValue cdp_tlv_type[22];
+		static IndexValue cdp_tlv_type[32];
 };

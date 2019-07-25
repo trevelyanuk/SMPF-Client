@@ -16,8 +16,9 @@ Dissectors::IndexValue Dissectors::lldp_tlv_type[10] =
 	{ LLDP_ORG_SPEC, "Organisation-specific LLDP" },
 };
 
-Dissectors::IndexValue Dissectors::cdp_tlv_type[22] =
+Dissectors::IndexValue Dissectors::cdp_tlv_type[32] =
 {
+	{ 0x00, NULL },
 	{ 0x01, "Device-ID" },
 	{ 0x02, "Address" },
 	{ 0x03, "Port-ID" },
@@ -29,6 +30,8 @@ Dissectors::IndexValue Dissectors::cdp_tlv_type[22] =
 	{ 0x09, "VTP Management Domain" },
 	{ 0x0a, "Native VLAN ID" },
 	{ 0x0b, "Duplex" },
+	{ 0x0c, "Unknown" },
+	{ 0x0d, "Unknown" },
 	{ 0x0e, "ATA-186 VoIP VLAN request" },
 	{ 0x0f, "ATA-186 VoIP VLAN assignment" },
 	{ 0x10, "Power Consumption" },
@@ -39,7 +42,14 @@ Dissectors::IndexValue Dissectors::cdp_tlv_type[22] =
 	{ 0x15, "System Object ID (not decoded)" },
 	{ 0x16, "Management Addresses" },
 	{ 0x17, "Physical Location" },
-	{ 0, NULL }
+	{ 0x18, "Unknown" },
+	{ 0x19, "Power Requested" },
+	{ 0x1a, "Power Available" },
+	{ 0x1b, "Port Unidirectional" },
+	{ 0x1c, "Unknown" },
+	{ 0x1d, "Energywise" },
+	{ 0x1e, "Unknown" },
+	{ 0x1f, "Spare Pair POE" }
 };
 
 int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
@@ -144,12 +154,12 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 			case 0x16: break; //Management Address
 			case 0x17: break; //Location - physical location?
 			case 0x18: break; //Unknown
-			case 0x19: break;
+			case 0x19: break; //Power requested
 			case 0x1a: break; //Power available
-			case 0x1b: break;
-			case 0x1c: break;
+			case 0x1b: break; //Port Unidirectional
+			case 0x1c: break; //Unknown
 			case 0x1d: break; //Energywise
-			case 0x1e: break;
+			case 0x1e: break; //Unknown
 			case 0x1f: break; //Spare POE
 			default:
 			{
