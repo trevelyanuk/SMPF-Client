@@ -805,7 +805,7 @@ int saveHost()
 
 int LoadConfig()
 {
-	LogfileOutput("Starting Switchy McPortface\n", 0);
+	printf("Starting Switchy McPortface version %s\n", VERSION_STRING);
 
 	char * fileName = "config.ini";
 	//FILE *pFile = fopen_s(fileName, "r");

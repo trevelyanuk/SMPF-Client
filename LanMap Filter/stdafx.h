@@ -9,6 +9,8 @@
 #include "dissectors.h"
 #include "Poststring.h"
 
+#define VERSION_STRING "1.01"
+
 #ifdef WIN32
 typedef unsigned char BYTE;
 typedef unsigned char u_char;
