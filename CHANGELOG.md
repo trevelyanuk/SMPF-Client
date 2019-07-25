@@ -1,31 +1,16 @@
-# Change log
-## Current version - 1.01
-
-* Issues
-  * Only checks if a packet is CDP or LLDP, with no distinction for filtering packets destined for phones. Causes incorrect submissions of entries to database.
-  * Fix adapters with retained IPs
-  * Detect if wireless adapters are present and do not listen for packets on these adapters
-  
-* To do 
-  * More debug info
-  * Name project
-  * Release build to have no interface at all (automated) unless run from command line
-  * Create installer to bundle everything up
-  * Create Mac and Linux builds
-  * Create makefile and .sln files for distribution
-  * FOG module
-  * Static link libraries
-  * Tidy up screen output (\n in the right places) and ensure that debug and release have different behaviour
-  * Tidy up LLDP TLVs
-  * Tidy up CDP TLVs
-
+# Change log - Current version 1.01
 
 ## Change history   
 
 ### 2019-07-25
 **Version 1.01**
 
-* CDP dissectors have been tidied
+* Fixed
+  * Tidy up CDP TLVs - CDP dissectors have been tidied
+  * Detect if wireless adapters are present and do not listen for packets on these adapters - Checks if the link is wireless or not
+
+* Moved issues and "todo" to the issues list on Github. Future changes will be noted as links to the issues that have been fixed.
+* Additional checks to see if the link is virtual or not
 * Started code overhaul; created Dissector and POST string classes in preparation for bigger changes
 * Removed lots of comments, moved to a legacy branch
 * Functionality exists now to log to a file
