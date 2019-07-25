@@ -1,5 +1,5 @@
 # Change log
-## Current version - 1.0
+## Current version - 1.01
 
 * Issues
   * Only checks if a packet is CDP or LLDP, with no distinction for filtering packets destined for phones. Causes incorrect submissions of entries to database.
@@ -21,6 +21,14 @@
 
 
 ## Change history   
+
+### 2019-07-25
+**Version 1.01**
+
+* CDP dissectors have been tidied
+* Started code overhaul; created Dissector and POST string classes in preparation for bigger changes
+* Removed lots of comments, moved to a legacy branch
+* Functionality exists now to log to a file
 
 ### 2017-07-20
 **Version 1.0**
