@@ -687,12 +687,16 @@ void StartCapture()
 		int testPacketType = (packetData[12] << 8 | packetData[13]);
 
 		printf("\n%d:%d:%d length of packet: %d\n\n", (packetHeader->ts.tv_sec % 86400) / 3600, (packetHeader->ts.tv_sec % 3600) / 60, packetHeader->ts.tv_sec % 60, packetLength);
+		
+		//printf("\n\tDestination MAC address:\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[0], packetData[1], packetData[2], packetData[3], packetData[4], packetData[5]);
+		printf("\n\tSource MAC address:\t\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[6], packetData[7], packetData[8], packetData[9], packetData[10], packetData[11]);
 
 		switch (testPacketType)
 		{
 			case LLDP: {
 				if (settingsLLDP)
 				{
+					printf("\n\tLLDP Contents:\n");
 					if (Dissectors::GetDataLLDP(packetData, packetLength) != 0)
 					{
 						continue;
@@ -705,6 +709,8 @@ void StartCapture()
 			default: {
 				if (settingsLLDP)
 				{
+					//printf("\n\tLength:\t\t\t\t %i", (packetData[12] << 8 | packetData[13]));
+					printf("\n\tCisco Discovery Protocol (Version %i) Contents:\n", packetData[22]);
 					if (Dissectors::GetDataCDP(packetData, packetLength) !=0 )
 					{
 						continue;
