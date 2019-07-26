@@ -263,7 +263,7 @@ int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 {
 	printf("\n\tDestination MAC address:\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[0], packetData[1], packetData[2], packetData[3], packetData[4], packetData[5]);
 	printf("\n\tSource MAC address:\t\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[6], packetData[7], packetData[8], packetData[9], packetData[10], packetData[11]);
-	printf("\n\tLLDP Contents:\n");
+	printf("\n\tLLDP Contents: ");
 
 	unsigned int count = 14; //LLDP starts at byte 14, after the mac addresses and type
 	int mask = 0x01FF;
@@ -386,7 +386,7 @@ int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 			{
 				memcpy(&Poststring::systemswName, packetData + count, length);
 				Poststring::slsystemswName = strlen(Poststring::systemswName);
-				printf("\n\t\t%s", Poststring::systemswName);
+				printf("\n\t%s", Poststring::systemswName);
 				count += length;
 				break;
 			}
@@ -396,7 +396,7 @@ int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 				{
 					value[x] = packetData[count+x];
 				}
-				printf("\n\t\t%s", value);
+				printf("\n\t%s", value);
 				count += length;
 				break;
 			}
