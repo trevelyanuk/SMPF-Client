@@ -129,8 +129,6 @@ Note that the left column is the BIT - so the final integer is a combination of 
 #define LLDP_CAPS_SVLAN			512
 #define LLDP_CAPS_MAC_RELAY		1024
 
-
-
 /*
 Management address subtype
 
@@ -139,23 +137,6 @@ The first octet gives the length of the management address subtype and managemen
 The subtype is going to be 1 octet, so the address is one less than the combined value. The address is likely an IP.
 */
 
-/* from IETF RFC 3232, ianaAddressFamilyNumbers module
-
-
-*/
+/* from IETF RFC 3232, ianaAddressFamilyNumbers module */
 #define LLDP_ADDR_IP4			1
 #define LLDP_ADDR_IP6			2
-#define LLDP_ADDR_NSAP			3
-#define LLDP_ADDR_HDLC			4
-#define LLDP_ADDR_BBN1822		5
-#define LLDP_ADDR_802			6
-#define LLDP_ADDR_E163			7
-#define LLDP_ADDR_E164			8
-#define LLDP_ADDR_F69			9
-#define LLDP_ADDR_X121			10
-#define LLDP_ADDR_IPX			11
-#define LLDP_ADDR_APPLETALK		12
-#define LLDP_ADDR_DECNET		13
-#define LLDP_ADDR_BANYANVINES	14
-#define LLDP_ADDR_E164_NSAP		15
-#define LLDP_ADDR_DNS			16

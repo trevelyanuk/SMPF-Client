@@ -22,7 +22,7 @@ class Dissectors {
 
 		static IndexValue lldp_tlv_8023_subtype[8];
 		static IndexValue lldp_tlv_8021_subtype[17];
-		static IndexValue lldp_tlv_management_subtype[8];
+		static IndexValue lldp_tlv_management_subtype[31];
 		static IndexValue lldp_tlv_chassis_subtype[8];
 		static IndexValue lldp_tlv_port_subtype[8];
 		static IndexValue lldp_tlv_type[10];

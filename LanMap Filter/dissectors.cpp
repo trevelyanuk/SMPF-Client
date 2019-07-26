@@ -3,6 +3,40 @@
 #include "dissectors.h"
 
 
+Dissectors::IndexValue Dissectors::lldp_tlv_management_subtype[31] = {
+	{ 0x00, NULL },
+	{ 0x01, "IPv4" },
+	{ 0x02, "IPv6" },
+	{ 0x03, "NSAP" },
+	{ 0x04, "HDLC" },
+	{ 0x05, "BBN" },
+	{ 0x06, "802" },
+	{ 0x07, "E.163" },
+	{ 0x08, "E.164" },
+	{ 0x09, "F.69" },
+	{ 0x0a, "X.121" },
+	{ 0x0b, "IPX" },
+	{ 0x0c, "Appletalk" },
+	{ 0x0d, "Decnet IV" },
+	{ 0x0e, "Banyan Vines" },
+	{ 0x0f, "E.164 with NSAP" },
+	{ 0x10, "DNS" },
+	{ 0x11, "Distinguished Name" },
+	{ 0x12, "AS Number" },
+	{ 0x13, "XTP over IPv4" },
+	{ 0x14, "XTP over IPv6" },
+	{ 0x15, "XTP native mode XTP" },
+	{ 0x16, "Fiber Channel World-Wide Port Name" },
+	{ 0x17, "Fiber Channel World-Wide Node Name" },
+	{ 0x18, "GWID" },
+	{ 0x19, "AFI for L2VPN" },
+	{ 0x1a, "MPLS-TP Section Endpoint ID" },
+	{ 0x1b, "MPLS-TP LSP Endpoint ID" },
+	{ 0x1c, "MPLS-TP Pseudowire Endpoint ID" },
+	{ 0x1d, "MT IP Multi-Topology IPv4" },
+	{ 0x1e, "MT IP Multi-Topology IPv6"}
+};
+
 Dissectors::IndexValue Dissectors::lldp_tlv_chassis_subtype[8] = {
 	{ 0, "Reserved" },
 	{ 1, "Chassis component" },
@@ -25,25 +59,24 @@ Dissectors::IndexValue Dissectors::lldp_tlv_port_subtype[8] = {
 	{ 7, "Locally assigned" }
 };
 
-
 Dissectors::IndexValue Dissectors::lldp_tlv_8021_subtype[17] = {
 	{ 0x00, NULL },
-	{ 0x01,	"Port VLAN ID" },			/* 802.1Q - D.2.1 */
-	{ 0x02, "Port and Protocol VLAN ID" },		/* 802.1Q - D.2.2 */
-	{ 0x03, "VLAN Name" },				/* 802.1Q - D.2.3 */
-	{ 0x04, "Protocol Identity" },			/* 802.1Q - D.2.4 */
-	{ 0x05, "VID Usage Digest" },			/* 802.1Q - D.2.5 */
-	{ 0x06, "Management VID" },			/* 802.1Q - D.2.6 */
-	{ 0x07,	"Link Aggregation" },			/* 802.1Q - D.2.7 */
-	{ 0x08,	"Congestion Notification" },		/* 802.1Q - D.2.8 */
-	{ 0x09, "ETS Configuration" },			/* 802.1Q - D.2.9 */
-	{ 0x0A, "ETS Recommendation" },			/* 802.1Q - D.2.10 */
-	{ 0x0B, "Priority Flow Control Configuration" },/* 802.1Q - D.2.11 */
-	{ 0x0C, "Application Protocol" },		/* 802.1Q - D.2.12 */
-	{ 0x0D, "EVB" },				/* 802.1Q - D.2.13 */
-	{ 0x0E, "CDCP" },				/* 802.1Q - D.2.14 */
-	{ 0x0F, "Port extension" },			/* 802.1BR - B.2 */
-	{ 0x10, "Application VLAN" }			/* 802.1Q - D.2.15 */
+	{ 0x01,	"Port VLAN ID" },
+	{ 0x02, "Port and Protocol VLAN ID" },
+	{ 0x03, "VLAN Name" },
+	{ 0x04, "Protocol Identity" },
+	{ 0x05, "VID Usage Digest" },
+	{ 0x06, "Management VID" },
+	{ 0x07,	"Link Aggregation" },
+	{ 0x08,	"Congestion Notification" },
+	{ 0x09, "ETS Configuration" },
+	{ 0x0A, "ETS Recommendation" },
+	{ 0x0B, "Priority Flow Control Configuration" },
+	{ 0x0C, "Application Protocol" },
+	{ 0x0D, "EVB" },
+	{ 0x0E, "CDCP" },
+	{ 0x0F, "Port extension" },
+	{ 0x10, "Application VLAN" }
 };
 
 Dissectors::IndexValue Dissectors::lldp_tlv_8023_subtype[8] = {
