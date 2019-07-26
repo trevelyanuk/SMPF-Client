@@ -96,7 +96,6 @@ The first byte after the TLV indicates the subtype
 #define LLDP_PORT_ACIRCID		6
 #define LLDP_PORT_LOCALAS		7
 
-
 /*
 Capabilities subtype
 
@@ -157,6 +156,6 @@ The subtype is going to be 1 octet, so the address is one less than the combined
 #define LLDP_ADDR_IPX			11
 #define LLDP_ADDR_APPLETALK		12
 #define LLDP_ADDR_DECNET		13
-#define LLDP_ADDR_BANTANVINES	14
+#define LLDP_ADDR_BANYANVINES	14
 #define LLDP_ADDR_E164_NSAP		15
 #define LLDP_ADDR_DNS			16
