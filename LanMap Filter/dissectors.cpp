@@ -307,8 +307,12 @@ int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 					case LLDP_CHASSIS_IP:
 					{
 						char chassis_ip[16];
-						sprintf_s(chassis_ip, "%i.%i.%.%i", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3]);
-						printf(chassis_ip);
+						int network_family = packetData[count];
+						if (network_family == 1) //IPv4
+						{
+							sprintf_s(chassis_ip, "%i.%i.%i.%i", packetData[count + 1], packetData[count + 2], packetData[count + 3], packetData[count + 4]);
+							printf(chassis_ip);
+						}
 						break;
 					}
 					case LLDP_CHASSIS_IFNAME:
@@ -370,7 +374,7 @@ int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 			}
 			case LLDP_TTL:
 			{
-				printf("%i ", (packetData[count] << 8 | packetData[count + 1]));
+				printf("\n\t\t\tSeconds: %i ", (packetData[count] << 8 | packetData[count + 1]));
 				count += 2;
 				break;
 			}
@@ -411,48 +415,48 @@ int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 
 				if (LLDP_CAPS_OTHER & syscaps)
 				{
-					printf("This system is something else..");
+					printf("\n\t\t\tThis system is something else..");
 				}
 				if (LLDP_CAPS_REPEATER & syscaps)
 				{
-					printf("Capabilities: This system is a repeater.");
+					printf("\n\t\t\tThis system is a repeater.");
 				}
 				if (LLDP_CAPS_MAC_BRIDGE & syscaps)
 				{
-					printf("Capabilities: This system is a switch.");
+					printf("\n\t\t\tThis system is a switch.");
 				}
 				if (LLDP_CAPS_WLAN_AP & syscaps)
 				{
-					printf("Capabilities: This system is a wireless access point.");
+					printf("\n\t\t\tThis system is a wireless access point.");
 				}
 				if (LLDP_CAPS_ROUTER & syscaps)
 				{
-					printf("Capabilities: This system is a router.");
+					printf("\n\t\t\tThis system is a router.");
 				}
 				if (LLDP_CAPS_TELEPHONE & syscaps)
 				{
-					printf("Capabilities: This system is a telephone.");
+					printf("\n\t\t\tThis system is a telephone.");
 					return 1;
 				}
 				if (LLDP_CAPS_DOCSIS & syscaps)
 				{
-					printf("Capabilities: This system is a DOCSIS cable device.");
+					printf("\n\t\t\tThis system is a DOCSIS cable device.");
 				}
 				if (LLDP_CAPS_STATION & syscaps)
 				{
-					printf("Capabilities: This system is a station.");
+					printf("\n\t\t\tThis system is a station.");
 				}
 				if (LLDP_CAPS_CVLAN & syscaps)
 				{
-					printf("Capabilities: This system is a C-VLAN Component of a VLAN Bridge.");
+					printf("\n\t\t\tThis system is a C-VLAN Component of a VLAN Bridge.");
 				}
 				if (LLDP_CAPS_SVLAN & syscaps)
 				{
-					printf("Capabilities: This system is a S-VLAN Component of a VLAN Bridge.");
+					printf("\n\t\t\tThis system is a S-VLAN Component of a VLAN Bridge.");
 				}
 				if (LLDP_CAPS_MAC_RELAY & syscaps)
 				{
-					printf("Capabilities: This system is a two-port MAC relay.");
+					printf("\n\t\t\tThis system is a two-port MAC relay.");
 				}
 				break;
 		}
