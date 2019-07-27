@@ -140,14 +140,6 @@ Dissectors::IndexValue Dissectors::cdp_tlv_type[32] =
 	{ 0x1f, "Spare Pair POE" }
 };
 
-#define NO_MAC			1
-#define NO_IP			2
-#define NO_NAME			4 
-#define NO_VLAN			8 
-#define NO_PORT			16
-#define IS_TELEPHONE	32
-#define NOT_SWITCH		64
-
 int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 {
 	unsigned char validation = (NO_MAC | NO_IP | NO_NAME | NO_VLAN );

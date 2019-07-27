@@ -1,5 +1,14 @@
 #pragma once
 
+/* Flags for packet validation */
+#define NO_MAC			1
+#define NO_IP			2
+#define NO_NAME			4 
+#define NO_VLAN			8 
+#define NO_PORT			16
+#define IS_TELEPHONE	32
+#define NOT_SWITCH		64
+
 class Dissectors {
 	typedef unsigned char  u_char;
 
