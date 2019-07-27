@@ -205,7 +205,10 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				validation &= ~NO_PORT;
 				break;
 			}
-			case 0x04: break; //Capabilities
+			case 0x04: 
+			{
+				break; //Capabilities
+			}
 			case 0x05: break; //Version string, can be quite long 
 			case 0x06: break; //Platform
 			{
@@ -223,7 +226,6 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				_itoa_s(port_vlan, Poststring::systemvlan, 10);
 				Poststring::slsystemvlan = strlen(Poststring::systemvlan);
 				validation &= ~NO_VLAN;
-				count += 2;
 				break;
 			}
 			case 0x0b: break; //Duplex
