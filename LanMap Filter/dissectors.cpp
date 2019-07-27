@@ -142,7 +142,7 @@ Dissectors::IndexValue Dissectors::cdp_tlv_type[32] =
 
 int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 {
-	unsigned char validation = (NO_MAC | NO_IP | NO_NAME | NO_VLAN );
+	unsigned char validation = (NO_MAC | NO_IP | NO_NAME | NO_VLAN | NO_PORT | NOT_SWITCH);
 	unsigned int count = 26;
 	for (count; count < dataLength; )
 	{
@@ -158,7 +158,6 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 			value[x] = packetData[count];
 			count++;
 		}
-
 		printf("\n\t%s: %s", cdp_tlv_type[type].value, value);
 
 		switch (type)
@@ -205,9 +204,26 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				validation &= ~NO_PORT;
 				break;
 			}
-			case 0x04: break; //Capabilities
+			case 0x04: //Capabilities
+			{
+				int syscaps = (value[0] << 24 | value[1] << 16| value[2] << 8 | value[3]);
+				
+				if (CDP_CAP_SWITCH & syscaps)
+				{
+					printf("This system is a switch.");
+
+					validation &= ~NOT_SWITCH;
+				}
+				if ((CDP_CAP_PHONE & syscaps) || (CDP_CAP_HOST & syscaps))
+				{
+					printf("This system is a telephone.");
+
+					validation |= IS_TELEPHONE;
+				}
+				break; 
+			}
 			case 0x05: break; //Version string, can be quite long 
-			case 0x06: break; //Platform
+			case 0x06: //Platform
 			{
 				memcpy(&Poststring::systemswMAC, value, length);
 				Poststring::slsystemswMAC = strlen(Poststring::systemswMAC);
@@ -217,13 +233,13 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 			case 0x07: break; //Prefixes
 			case 0x08: break; //Protocol-hello option
 			case 0x09: break; //VTP Management domain
-			case 0x0a: break; //Native VLAN ID
+			case 0x0a:  //Native VLAN ID
 			{
 				int port_vlan = (value[0] << 8 | value[1]);
+				printf("%i", port_vlan);
 				_itoa_s(port_vlan, Poststring::systemvlan, 10);
 				Poststring::slsystemvlan = strlen(Poststring::systemvlan);
 				validation &= ~NO_VLAN;
-				count += 2;
 				break;
 			}
 			case 0x0b: break; //Duplex
@@ -259,7 +275,7 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 
 int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 {
-	unsigned char validation = (NO_MAC | NO_IP | NO_NAME | NO_VLAN | NOT_SWITCH);
+	unsigned char validation = (NO_MAC | NO_IP | NO_NAME | NO_VLAN | NO_PORT | NOT_SWITCH);
 	unsigned int count = 14; //LLDP starts at byte 14, after the mac addresses and type
 	int mask = 0x01FF;
 
