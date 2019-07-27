@@ -142,7 +142,7 @@ Dissectors::IndexValue Dissectors::cdp_tlv_type[32] =
 
 int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 {
-	unsigned char validation = (NO_MAC | NO_IP | NO_NAME | NO_VLAN | NO_PORT );
+	unsigned char validation = (NO_MAC | NO_IP | NO_NAME | NO_VLAN | NO_PORT | NOT_SWITCH);
 	unsigned int count = 26;
 	for (count; count < dataLength; )
 	{
@@ -205,9 +205,23 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				validation &= ~NO_PORT;
 				break;
 			}
-			case 0x04: 
+			case 0x04: //Capabilities
 			{
-				break; //Capabilities
+				int syscaps = (value[0] << 24 | value[1] << 16| value[2] << 8 | value[3]);
+				
+				if (CDP_CAP_SWITCH & syscaps)
+				{
+					printf("This system is a switch.");
+
+					validation &= ~NOT_SWITCH;
+				}
+				if ((CDP_CAP_PHONE & syscaps) || (CDP_CAP_HOST & syscaps))
+				{
+					printf("This system is a telephone.");
+
+					validation |= IS_TELEPHONE;
+				}
+				break; 
 			}
 			case 0x05: break; //Version string, can be quite long 
 			case 0x06: //Platform

@@ -28,10 +28,11 @@
 #define CDP_TLV_POWER_AVAILABLE 0x0019
 #define CDP_TLV_UNIDIR          0x001B
 
-#define CDP_CAPMASK_ROUTER      0x01    
-#define CDP_CAPMASK_TBBRIDGE    0x02
-#define CDP_CAPMASK_SPBRIDGE    0x04
-#define CDP_CAPMASK_SWITCH      0x08
-#define CDP_CAPMASK_HOST        0x10
-#define CDP_CAPMASK_IGMPFILTER  0x20
-#define CDP_CAPMASK_REPEATER    0x40
+#define CDP_CAP_ROUTER      0x01    
+#define CDP_CAP_TBBRIDGE    0x02
+#define CDP_CAP_SPBRIDGE    0x04
+#define CDP_CAP_SWITCH      0x08
+#define CDP_CAP_HOST        0x10
+#define CDP_CAP_IGMPFILTER  0x20
+#define CDP_CAP_REPEATER    0x40
+#define CDP_CAP_PHONE		0x80
