@@ -713,6 +713,7 @@ void StartCapture()
 					printf("\n\tCisco Discovery Protocol (Version %i) Contents:\n", packetData[22]);
 					if (Dissectors::GetDataCDP(packetData, packetLength) !=0 )
 					{
+						printf("\n\tError: invalid frame. Restarting capture..\n");
 						continue;
 					}
 					sprintf_s(Poststring::systemsourceproto, "CDP");

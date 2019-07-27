@@ -140,17 +140,18 @@ Dissectors::IndexValue Dissectors::cdp_tlv_type[32] =
 	{ 0x1f, "Spare Pair POE" }
 };
 
+#define NO_MAC			1
+#define NO_IP			2
+#define NO_NAME			4 
+#define NO_VLAN			8 
+#define NO_PORT			16
+#define IS_TELEPHONE	32
+#define NOT_SWITCH		64
+
 int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 {
-	printf("\n\tDestination MAC address:\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[0], packetData[1], packetData[2], packetData[3], packetData[4], packetData[5]);
-	printf("\n\tSource MAC address:\t\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[6], packetData[7], packetData[8], packetData[9], packetData[10], packetData[11]);
-	printf("\n\tLength:\t\t\t\t %i", (packetData[12] << 8 | packetData[13]));
-	printf("\n\tCisco Discovery Protocol Version %i", packetData[22]);
-	//printf("\n\tTTL:%i", packetData[23]);
-
+	unsigned char validation = (NO_MAC | NO_IP | NO_NAME | NO_VLAN );
 	unsigned int count = 26;
-
-	//Iterate through each TLV
 	for (count; count < dataLength; )
 	{
 		unsigned int type = (packetData[count] << 8 | packetData[count + 1]);
@@ -174,6 +175,7 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 			{
 				memcpy(&Poststring::systemswName, packetData + count-length, length);
 				Poststring::slsystemswName = strlen(Poststring::systemswName);
+				validation &= ~NO_NAME;
 				break;
 			}
 			case 0x02: //Address
@@ -198,6 +200,7 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 						sprintf_s(Poststring::systemswIP, "%i.%i.%i.%i", value[tempCount], value[tempCount + 1], value[tempCount + 2], value[tempCount + 3]);
 						printf(Poststring::systemswIP);
 						Poststring::slsystemswIP = strlen(Poststring::systemswIP);
+						validation &= ~NO_IP;
 						tempCount += addressLength;
 					}
 				}
@@ -207,6 +210,7 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 			{
 				memcpy(&Poststring::systemswitchport, value, length);
 				Poststring::slsystemswitchport = strlen(Poststring::systemswitchport);
+				validation &= ~NO_PORT;
 				break;
 			}
 			case 0x04: break; //Capabilities
@@ -215,6 +219,7 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 			{
 				memcpy(&Poststring::systemswMAC, value, length);
 				Poststring::slsystemswMAC = strlen(Poststring::systemswMAC);
+				validation &= ~NO_MAC;
 				break;
 			}
 			case 0x07: break; //Prefixes
@@ -225,6 +230,7 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 				int port_vlan = (value[0] << 8 | value[1]);
 				_itoa_s(port_vlan, Poststring::systemvlan, 10);
 				Poststring::slsystemvlan = strlen(Poststring::systemvlan);
+				validation &= ~NO_VLAN;
 				count += 2;
 				break;
 			}
@@ -256,15 +262,12 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 			}
 		}
 	}
-	return 0;
+	return validation;
 }
 
 int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 {
-	printf("\n\tDestination MAC address:\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[0], packetData[1], packetData[2], packetData[3], packetData[4], packetData[5]);
-	printf("\n\tSource MAC address:\t\t %02x:%02x:%02x:%02x:%02x:%02x", packetData[6], packetData[7], packetData[8], packetData[9], packetData[10], packetData[11]);
-	printf("\n\tLLDP Contents:\n");
-
+	unsigned char validation = (NO_MAC | NO_IP | NO_NAME | NO_VLAN | NOT_SWITCH);
 	unsigned int count = 14; //LLDP starts at byte 14, after the mac addresses and type
 	int mask = 0x01FF;
 
@@ -284,7 +287,7 @@ int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 
 		switch (type)
 		{
-			case LLDP_END:	return 0;
+			case LLDP_END: break;
 			case LLDP_CHASSIS_ID:
 			{
 				int subtype = packetData[count];
@@ -302,6 +305,7 @@ int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 						sprintf_s(Poststring::systemswMAC, "%02x:%02x:%02x:%02x:%02x:%02x", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3], packetData[count + 4], packetData[count + 5]);
 						printf(Poststring::systemswMAC);
 						Poststring::slsystemswMAC = strlen(Poststring::systemswMAC);
+						validation &= ~NO_MAC;
 						break;
 					}
 					case LLDP_CHASSIS_IP:
@@ -383,6 +387,7 @@ int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 				memcpy(&Poststring::systemswitchport, packetData + count, length);
 				Poststring::slsystemswitchport = strlen(Poststring::systemswitchport);
 				printf("\n\t\t%s", Poststring::systemswitchport);
+				validation &= ~NO_PORT;
 				count += length;
 				break;
 			}
@@ -391,6 +396,7 @@ int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 				memcpy(&Poststring::systemswName, packetData + count, length);
 				Poststring::slsystemswName = strlen(Poststring::systemswName);
 				printf("\n\t\t%s", Poststring::systemswName);
+				validation &= ~NO_NAME;
 				count += length;
 				break;
 			}
@@ -424,6 +430,8 @@ int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 				if (LLDP_CAPS_MAC_BRIDGE & syscaps)
 				{
 					printf("\n\t\t\tThis system is a switch.");
+
+					validation &= ~NOT_SWITCH;
 				}
 				if (LLDP_CAPS_WLAN_AP & syscaps)
 				{
@@ -436,7 +444,8 @@ int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 				if (LLDP_CAPS_TELEPHONE & syscaps)
 				{
 					printf("\n\t\t\tThis system is a telephone.");
-					return 1;
+
+					validation |= IS_TELEPHONE;
 				}
 				if (LLDP_CAPS_DOCSIS & syscaps)
 				{
@@ -475,6 +484,7 @@ int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 						sprintf_s(Poststring::systemswIP, "%i.%i.%i.%i", packetData[count], packetData[count + 1], packetData[count + 2], packetData[count + 3]);
 						Poststring::slsystemswIP = strlen(Poststring::systemswIP);
 						printf("\n\tIP address:\t%s", Poststring::systemswIP);
+						validation &= ~NO_IP;
 						count += 4;
 						break;
 					}
@@ -518,6 +528,7 @@ int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 							{
 								memcpy(&Poststring::slsystemswName, packetData + count, length);
 								Poststring::slsystemswName = strlen(Poststring::systemswName);
+								validation &= ~NO_NAME;
 								break;
 							}
 							default:
@@ -543,6 +554,7 @@ int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 								printf(": %i", port_vlan);
 								_itoa_s(port_vlan, Poststring::systemvlan, 10);
 								Poststring::slsystemvlan = strlen(Poststring::systemvlan);
+								validation &= ~NO_VLAN;
 								break;
 							}
 							default: break;
@@ -619,5 +631,5 @@ int Dissectors::GetDataLLDP(const u_char* packetData, int dataLength)
 			}
 		}
 	}
-	return 0;
+	return validation;
 }
