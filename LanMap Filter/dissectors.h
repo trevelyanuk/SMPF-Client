@@ -9,6 +9,9 @@
 #define IS_TELEPHONE	32
 #define NOT_SWITCH		64
 
+#define LLDP 0x0180c2 //0x88cc
+#define CDP 0x01000c //0x2000
+
 class Dissectors {
 	typedef unsigned char  u_char;
 

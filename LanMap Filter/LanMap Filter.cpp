@@ -611,22 +611,22 @@ int InitCapture()
 	//EthernetII and Ethernet/SNAP packets have their ethertype defined in each of the respective locations
 	//The first is LLDP, second is CDP.
 
-	char packet_filter[45] = "";
+	char packet_filter[64] = "";
 
 	if (settingsCDP && settingsLLDP)
 	{
-		sprintf_s(packet_filter, "ether[12:2] = 0x88cc or ether[20:2] = 0x2000");
+		sprintf_s(packet_filter, "ether dst 01:80:c2:00:00:0e or ether dst 01:00:0c:cc:cc:cc");
 	}
 	else
 		if (settingsCDP)
 		{
-			sprintf_s(packet_filter, "ether[20:2] = 0x2000");
+			sprintf_s(packet_filter, "ether dst 01:00:0c:cc:cc:cc");
 
 		}
 		else
 			if (settingsLLDP)
 			{
-				sprintf_s(packet_filter, "ether[12:2] = 0x88cc");
+				sprintf_s(packet_filter, "ether dst 01:80:c2:00:00:0e");
 
 			}
 			else
@@ -684,7 +684,7 @@ void StartCapture()
 		}
 
 		int packetLength = packetHeader->len;
-		int testPacketType = (packetData[12] << 8 | packetData[13]);
+		UINT32 testPacketType = (packetData[0] << 16 | packetData[1] << 8 | packetData[2]);
 		int validation = -1;
 
 		printf("\n%d:%d:%d length of packet: %d\n\n", (packetHeader->ts.tv_sec % 86400) / 3600, (packetHeader->ts.tv_sec % 3600) / 60, packetHeader->ts.tv_sec % 60, packetLength);
@@ -701,12 +701,13 @@ void StartCapture()
 				Poststring::slsystemsourceproto = strlen(Poststring::systemsourceproto);
 				break;
 			}
-			default: {
+			case CDP: {
 				//printf("\n\tLength:\t\t\t\t %i", (packetData[12] << 8 | packetData[13]));
 				printf("\n\tCisco Discovery Protocol (Version %i) Contents:\n", packetData[22]);
 				validation = Dissectors::GetDataCDP(packetData, packetLength);					
 				sprintf_s(Poststring::systemsourceproto, "CDP");
 				Poststring::slsystemsourceproto = strlen(Poststring::systemsourceproto);
+				break;
 			}
 		}
 
