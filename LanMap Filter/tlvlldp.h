@@ -1,7 +1,6 @@
 #pragma once
 
 //LLDP TLV Headers
-#define LLDP	0x88cc
 
 /*
 

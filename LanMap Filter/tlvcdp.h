@@ -1,10 +1,6 @@
 #pragma once
 
 //CDP TLV headers 
-#define CDP		0x2000
-
-
-
 
 #define CDP_TLV_DEVID           0x0001
 #define CDP_TLV_ADDRESS         0x0002
