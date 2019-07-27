@@ -685,6 +685,7 @@ void StartCapture()
 
 		int packetLength = packetHeader->len;
 		int testPacketType = (packetData[12] << 8 | packetData[13]);
+		int validation = -1;
 
 		printf("\n%d:%d:%d length of packet: %d\n\n", (packetHeader->ts.tv_sec % 86400) / 3600, (packetHeader->ts.tv_sec % 3600) / 60, packetHeader->ts.tv_sec % 60, packetLength);
 		
@@ -694,86 +695,50 @@ void StartCapture()
 		switch (testPacketType)
 		{
 			case LLDP: {
-				if (settingsLLDP)
-				{
-					printf("\n\tLLDP Contents:\n");
-					int validation = Dissectors::GetDataLLDP(packetData, packetLength);
-					if (validation != 0)
-					{
-						if (validation & IS_TELEPHONE)
-						{
-							printf("\nThe frame was sent from a telephone");
-						}
-						if (validation & NOT_SWITCH)
-						{
-							printf("\nSending device was not a switch");
-						}
-						if (validation & NO_IP)
-						{
-							printf("\nSwitch IP address not captured");
-						}
-						if (validation & NO_MAC)
-						{
-							printf("\nSwitch MAC address not captured");
-						}
-						if (validation & NO_PORT)
-						{
-							printf("\nSwitch port not captured");
-						}
-						if (validation & NO_NAME)
-						{
-							printf("\nSwitch name not captured");
-						}
-
-						printf("\n\tRestarting capture..\n");
-						continue;
-					}
-					sprintf_s(Poststring::systemsourceproto, "LLDP");
-					Poststring::slsystemsourceproto = strlen(Poststring::systemsourceproto);
-				}
+				printf("\n\tLLDP Contents:\n");
+				validation = Dissectors::GetDataLLDP(packetData, packetLength);					
+				sprintf_s(Poststring::systemsourceproto, "LLDP");
+				Poststring::slsystemsourceproto = strlen(Poststring::systemsourceproto);
 				break;
 			}
 			default: {
-				if (settingsCDP)
-				{
-					//printf("\n\tLength:\t\t\t\t %i", (packetData[12] << 8 | packetData[13]));
-					printf("\n\tCisco Discovery Protocol (Version %i) Contents:\n", packetData[22]);
-					int validation = Dissectors::GetDataCDP(packetData, packetLength);
-					if (validation != 0)
-					{
-						if (validation &= IS_TELEPHONE)
-						{
-							printf("\n\tThe frame was sent from a telephone");
-						}
-						if (validation &= NOT_SWITCH)
-						{
-							printf("\n\tSending device was not a switch");
-						}
-						if (validation &= NO_IP)
-						{
-							printf("\n\tSwitch IP address not captured");
-						}
-						if (validation &= NO_MAC)
-						{
-							printf("\n\tSwitch MAC address not captured");
-						}
-						if (validation &= NO_PORT)
-						{
-							printf("\n\tSwitch port not captured");
-						}
-						if (validation &= NO_NAME)
-						{
-							printf("\n\tSwitch name not captured");
-						}
-
-						printf("\n\tRestarting capture..\n");
-						continue;
-					}
-					sprintf_s(Poststring::systemsourceproto, "CDP");
-					Poststring::slsystemsourceproto = strlen(Poststring::systemsourceproto);
-				}
-
+				//printf("\n\tLength:\t\t\t\t %i", (packetData[12] << 8 | packetData[13]));
+				printf("\n\tCisco Discovery Protocol (Version %i) Contents:\n", packetData[22]);
+				validation = Dissectors::GetDataCDP(packetData, packetLength);					
+				sprintf_s(Poststring::systemsourceproto, "CDP");
+				Poststring::slsystemsourceproto = strlen(Poststring::systemsourceproto);
 			}
+		}
+
+		if (validation != 0)
+		{
+			if (validation & IS_TELEPHONE)
+			{
+				printf("\nThe frame was sent from a telephone");
+			}
+			if (validation & NOT_SWITCH)
+			{
+				printf("\nSending device was not a switch");
+			}
+			if (validation & NO_IP)
+			{
+				printf("\nSwitch IP address not captured");
+			}
+			if (validation & NO_MAC)
+			{
+				printf("\nSwitch MAC address not captured");
+			}
+			if (validation & NO_PORT)
+			{
+				printf("\nSwitch port not captured");
+			}
+			if (validation & NO_NAME)
+			{
+				printf("\nSwitch name not captured");
+			}
+
+			printf("\n\tRestarting capture..\n");
+			continue;
 		}
 
 		//Error with packet. Get the error from the current capture instance
