@@ -158,7 +158,6 @@ int Dissectors::GetDataCDP(const u_char* packetData, int dataLength)
 			value[x] = packetData[count];
 			count++;
 		}
-
 		printf("\n\t%s: %s", cdp_tlv_type[type].value, value);
 
 		switch (type)
