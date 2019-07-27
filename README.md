@@ -1,19 +1,27 @@
-The Switchy McPortFace client is a desktop application that captures switch advertisements on a local wired network to determine information about the switch and the switchport that the machine is connected to. Whilst many other tools out there farm this information from switches and routers via SNMP, the idea here is to capture this information from the hosts themselves, which in some scenarios may be more useful.
+# Switchy McPortFace (SMPF)
+For want of a better name..
 
-The core library used is libpcap/winpcap, which - in promiscuous mode - can capture packets received by the operating system. Promiscuous mode is crucial, since it needs to be able to capture layer 2 packets (ok, technically "frames", but whatever) and keep them. 
+The SMPF client is an application that simply captures switch advertisements broadcast over a local wired network in order to determine information about the switch to which that host is connected, notably the *switch port* that the host is using. Whilst this is possible to do via SNMP or other switch management tools, SMPF aims to accomplish this solely from the hosts themselves. 
 
-The two main protocols that the client looks for are LLDP and CDP. There are a few other discovery protocols that I would love to be able to play with and work into the client, but in lieu of these existing (and LLDP being vendor-agnostic), I'll settle for just these two. These protocols contain similar data, formatted slightly differently, that can be extracted to provide useful information such as:
-
+Once collected, this information can be output and viewed locally on a host, collected into a local log file, collected into a CSV or sent as POST data to a server. Information that is currently collected so far:
 - Switch IP
 - Switch name
 - Switch MAC address
-- VLAN
-- Device capabilities
-And various other things.
+- Switch port
+- Switch port VLAN
+- Host IP 
+- Host name
+- Host MAC address
+- Protocol that the data was captured using 
 
-Normally these protocols are ignored by most OSes and are just used by inter-connecting networking devices to build a picture of the network topology. Well, given that that data is often present on the wire, it can be grabbed and interpetted as text data. 
+##Libraries
+SMPF uses pcap at its core; namely WinPcap*(libpcap 1.0) on Windows or libpcap on Linux systems. This allows for layer 2 frames to be received by the operating system in promiscuous mode. 
 
-Useful resources have been:
+*Note: Npcap 'should' be the way forward, but their license terms prohibit actual 'free' use currently, since it is capped at 5 systems.
 
+##Protocols
+The SMPF client creates a filter which allows through either CDP and/or LLDP frames. It would be interesting to be able to incorporate Juniper discovery protocol data, or other discovery protocols; however, LLDP is vendor-agnostic and is implemented nearly everywhere. These protocols are not usually used by host operating systems, since they're primarily for switches and routers to build a picture about their neighbours, although they are also leveraged by Fluke testing tools.
 
-Its important to note that not all switches will have LLDP and CDP advertisements enabled. If you haven't got access to your network infrastructure and these aren't enabled, this client is kind of useless to you, unfortunately!
+Its important to note that not all switches will have LLDP and CDP advertisements enabled, so you're likely out of luck if you don't have access to your network infrastructure in order to enable them (if they aren't already).
+
+Contributions are welcome and I would be really interested to hear from anyone who has Juniper kit, or who wants to implement this or has issues with their own setup
