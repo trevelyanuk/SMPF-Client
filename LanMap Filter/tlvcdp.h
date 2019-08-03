@@ -37,5 +37,5 @@
 #define CDP_CAP_REPEATER				0x40
 #define CDP_CAP_PHONE					0x80
 #define CDP_CAP_REMOTELY_MANAGED_DEVICE	0x0100
-#define CDP_CAP_CVTA 					0x0200 //Cast phone port, STP dispute resolution.. who knows..
+#define CDP_CAP_CVTA 					0x0200 //Cast phone port, STP dispute resolution.. who knows. Cisco Unified Video Advantage/Cisco VT camera.. platform dependent possibly.
 #define CDP_CAP_TWO_PORT_MAC_RELAY 		0x0400
